@@ -63,6 +63,7 @@ export default function Home() {
   const [myName, setMyName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [showEntry, setShowEntry] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [state, setState] = useState<State>({ cards: [], feed: [], agents: [] });
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("request");
@@ -83,7 +84,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/state");
         if (res.ok) setState((await res.json()) as State);
-      } catch { /* ignore */ }
+      } catch { /* ignore */ } finally { setLoading(false); }
     };
     poll();
     pollRef.current = setInterval(poll, 1000);
@@ -108,10 +109,15 @@ export default function Home() {
   async function submitCard(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !myName) return;
+    // If message @mentions an agent name, treat as a direct request
+    const mentionedAgent = state.agents.find(a =>
+      title.toLowerCase().includes(`@${a.name.toLowerCase()}`)
+    );
+    const effectiveTag = mentionedAgent ? "request" : tag;
     await fetch("/api/cards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, body: "", tag, author: myName }),
+      body: JSON.stringify({ title, body: "", tag: effectiveTag, author: myName }),
     });
     setTitle("");
     setTag("request");
@@ -142,6 +148,26 @@ export default function Home() {
       if (res.ok) setSpawnDesc("");
       else alert(((await res.json()) as { error?: string }).error ?? "Failed");
     } finally { setSpawning(false); }
+  }
+
+  // ── Loading splash ──────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="name-overlay">
+        <motion.div
+          className="splash-inner"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <div className="splash-logo">huddle<span>.</span></div>
+          <div className="splash-sub">THON 2026 · Floor Command</div>
+          <div className="splash-dots">
+            <span /><span /><span />
+          </div>
+        </motion.div>
+      </div>
+    );
   }
 
   // ── Name entry ──────────────────────────────────────────

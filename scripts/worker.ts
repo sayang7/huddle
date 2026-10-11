@@ -5,6 +5,36 @@ import { ChangeStream, Document, ObjectId } from "mongodb";
 import { getDb, closeDb } from "../lib/db";
 import { llm } from "../lib/llm";
 
+// ── Demo-mode fallback (fires when LLM is unavailable) ───────────
+function demoFallback(title: string, tag?: string): string {
+  const t = (title + " " + (tag ?? "")).toLowerCase();
+  if (t.includes("water") || t.includes("drink") || t.includes("hydrat")) {
+    return "Water cart on the way — supplies team dispatched to your section now";
+  }
+  if (t.includes("collaps") || t.includes("unrespons") || t.includes("faint") || t.includes("unconsci")) {
+    return "Medical situation flagged as critical — first aid team paged, do NOT move the dancer";
+  }
+  if (t.includes("dizz") || t.includes("nausea") || t.includes("cramp") || t.includes("pain") || t.includes("allerg")) {
+    return "Medical team en route — medical situation confirmed, keep the dancer still";
+  }
+  if (t.includes("energy") || t.includes("morale") || t.includes("tired") || t.includes("zoning") || t.includes("restless")) {
+    return "Morale check triggered — hype squad heading over to reinvigorate that section";
+  }
+  if (t.includes("snack") || t.includes("food") || t.includes("granola") || t.includes("supplies") || t.includes("blanket")) {
+    return "Supplies restock incoming — volunteer with a cart is heading your way now";
+  }
+  if (t.includes("security") || t.includes("unauthorized") || t.includes("unknown") || t.includes("argument") || t.includes("conflict")) {
+    return "Security situation flagged — keeping the area clear until staff arrives";
+  }
+  if (t.includes("bathroom") || t.includes("line") || t.includes("congestion") || t.includes("crowd") || t.includes("logistics")) {
+    return "Logistics issue logged — rerouting foot traffic and sending staff to manage the flow";
+  }
+  if (t.includes("light") || t.includes("sound") || t.includes("equipment") || t.includes("technical") || t.includes("dj")) {
+    return "Technical issue flagged — AV crew notified and heading over to fix it";
+  }
+  return "Got it — on it right now, I'll update the floor once I know more";
+}
+
 interface Agent {
   name: string;
   emoji: string;
@@ -60,10 +90,16 @@ async function main() {
             .collection("cards")
             .updateOne({ _id: doc._id }, { $set: { status: "working" } });
 
-          const result = await llm(
-            agent.instructions,
-            `Title: ${doc.title}\n\n${doc.body ?? ""}`
-          );
+          let result: string;
+          try {
+            result = await llm(
+              agent.instructions,
+              `Title: ${doc.title}\n\n${doc.body ?? ""}`
+            );
+          } catch (llmErr) {
+            console.warn(`[${agent.name}] LLM unavailable, using demo fallback:`, llmErr);
+            result = demoFallback(doc.title, doc.tag);
+          }
 
           const now = new Date();
 

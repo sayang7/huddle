@@ -13,6 +13,13 @@
       "body": "46 hours. Every request gets a response. Call it in.",
       "tag": "note",
       "author": "system"
+    },
+    {
+      "title": "Hey everyone, Alex here. I'm monitoring the floor all 46 hours — drop a request and I'll jump on it. Tag it 'request' and I'll triage it immediately.",
+      "body": "",
+      "tag": "agent-output",
+      "author": "Alex",
+      "status": "idle"
     }
   ],
   "tests": [
