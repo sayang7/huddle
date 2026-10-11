@@ -164,13 +164,7 @@ html, body {
   display: flex; align-items: center; gap: 6px;
 }
 
-.workspace-name .dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  flex-shrink: 0;
-}
+/* THON ribbon replaces old dot — no .dot styles needed */
 
 .workspace-subtitle {
   font-size: 0.72rem;
@@ -238,6 +232,67 @@ html, body {
   width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--green);
+  flex-shrink: 0;
+}
+
+/* ─── Hazard banner ────────────────────────────────────── */
+.hazard-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(232, 68, 90, 0.1);
+  border-bottom: 1px solid rgba(232, 68, 90, 0.25);
+  padding: 8px 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.hazard-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  animation: hazard-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hazard-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(232,68,90,0.6); }
+  50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(232,68,90,0); }
+}
+
+/* ─── Substitution section ─────────────────────────────── */
+.sub-empty {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  padding: 4px 0 8px;
+  font-style: italic;
+}
+
+.sub-row {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sub-row:last-of-type { border-bottom: none; }
+
+.sub-icon {
+  font-size: 0.82rem;
+  color: var(--orange);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sub-text {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.sub-claimed {
+  font-size: 0.65rem;
+  color: var(--green);
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -428,7 +483,16 @@ html, body {
   background: rgba(124,101,246,0.12);
   color: var(--accent);
   border: 1px solid rgba(124,101,246,0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
+
+/* Per-tag color overrides */
+.msg-tag[data-tag="medical"]  { background: rgba(232,68,90,0.12);  color: var(--red);    border-color: rgba(232,68,90,0.25); }
+.msg-tag[data-tag="security"] { background: rgba(232,119,34,0.12); color: var(--orange); border-color: rgba(232,119,34,0.25); }
+.msg-tag[data-tag="supplies"] { background: rgba(43,172,118,0.12); color: var(--green);  border-color: rgba(43,172,118,0.25); }
+.msg-tag[data-tag="morale"]   { background: rgba(59,130,246,0.12); color: #60a5fa;       border-color: rgba(59,130,246,0.25); }
+.msg-tag[data-tag="substitute"] { background: rgba(232,193,34,0.12); color: var(--yellow); border-color: rgba(232,193,34,0.3); }
 
 .claimed-line {
   font-size: 0.72rem;

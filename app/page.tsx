@@ -50,6 +50,24 @@ function timeLabel(iso: string): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+// THON ribbon SVG icon
+function ThonRibbon() {
+  return (
+    <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      {/* Loop top-left */}
+      <path d="M11 13 C11 13 2 9 2 4.5 C2 2 4 0.5 6.5 0.5 C9 0.5 11 2.5 11 5" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      {/* Loop top-right */}
+      <path d="M11 13 C11 13 20 9 20 4.5 C20 2 18 0.5 15.5 0.5 C13 0.5 11 2.5 11 5" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      {/* Left tail */}
+      <path d="M11 13 L7 22 L5 25" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      {/* Right tail */}
+      <path d="M11 13 L15 22 L17 25" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      {/* Center knot fill */}
+      <circle cx="11" cy="13" r="2.5" fill="#1E407C"/>
+    </svg>
+  );
+}
+
 // Detect urgency keywords in text for subtle tinting
 function urgencyClass(text: string): string {
   const t = text.toLowerCase();
@@ -215,13 +233,22 @@ export default function Home() {
   // Working card IDs (agent is processing)
   const workingCards = cards.filter(c => c.status === "working" && !agentNames.has(c.author));
 
+  // Substitution cards (dancer swap events from teammate C's backend)
+  const subCards = cards.filter(c => c.tag === "substitute");
+
+  // Open critical/hazard cards (unclaimed, high urgency)
+  const hazardCards = cards.filter(c =>
+    !agentNames.has(c.author) && c.author !== "system" &&
+    c.status !== "claimed" && urgencyClass(c.title) === "urg-critical"
+  );
+
   return (
     <div className="app-shell">
       {/* ── Left sidebar ── */}
       <aside className="sidebar-left">
         <div className="workspace-header">
           <div className="workspace-name">
-            <span className="dot" />
+            <ThonRibbon />
             huddle.
           </div>
           <div className="workspace-subtitle">THON 2026 · Floor Command</div>
@@ -299,6 +326,20 @@ export default function Home() {
           <span className="chat-header-desc">— every request gets a response</span>
         </div>
 
+        <AnimatePresence>
+          {hazardCards.length > 0 && (
+            <motion.div
+              className="hazard-banner"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <span className="hazard-dot" />
+              <span>{hazardCards.length} critical situation{hazardCards.length > 1 ? "s" : ""} open — needs a captain</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="msg-feed">
           <div className="date-divider">
             <span className="date-label">THON 2026 · Today</span>
@@ -361,7 +402,7 @@ export default function Home() {
                       <div className="msg-text">{card.title}</div>
                       <div className="msg-footer">
                         {!isAgent && !isSystem && card.tag && (
-                          <span className="msg-tag">{card.tag}</span>
+                          <span className="msg-tag" data-tag={card.tag}>{card.tag}</span>
                         )}
                         {isClaimed && card.claimedBy && (
                           <motion.span
@@ -451,9 +492,31 @@ export default function Home() {
         </form>
       </div>
 
-      {/* ── Right sidebar: activity ── */}
+      {/* ── Right sidebar: substitutions + activity ── */}
       <aside className="sidebar-right">
-        <div className="sidebar-section-label">Activity</div>
+
+        {/* Dancer substitutions (teammate C feeds this via tag="substitute") */}
+        <div className="sidebar-section-label">Substitutions</div>
+        <AnimatePresence>
+          {subCards.length === 0 ? (
+            <div className="sub-empty">No swaps yet</div>
+          ) : (
+            subCards.map(c => (
+              <motion.div
+                key={c._id}
+                className="sub-row"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <span className="sub-icon">⇄</span>
+                <span className="sub-text">{c.title}</span>
+                {c.claimedBy && <span className="sub-claimed">✓ {c.claimedBy}</span>}
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+
+        <div className="sidebar-section-label" style={{ marginTop: 16 }}>Activity</div>
         <AnimatePresence initial={false}>
           {state.feed.map(item => (
             <motion.div
