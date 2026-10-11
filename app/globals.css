@@ -528,6 +528,7 @@ html, body {
 .msg-tag[data-tag="supplies"] { background: rgba(43,172,118,0.12); color: var(--green);  border-color: rgba(43,172,118,0.25); }
 .msg-tag[data-tag="morale"]   { background: rgba(59,130,246,0.12); color: #60a5fa;       border-color: rgba(59,130,246,0.25); }
 .msg-tag[data-tag="substitute"] { background: rgba(232,193,34,0.12); color: var(--yellow); border-color: rgba(232,193,34,0.3); }
+.msg-tag[data-tag="schedule"]   { background: rgba(124,101,246,0.12); color: var(--accent); border-color: rgba(124,101,246,0.25); }
 
 .claimed-line {
   font-size: 0.72rem;
@@ -678,6 +679,77 @@ html, body {
 }
 .compose-tag-btn.active { color: var(--accent); border-color: var(--accent); }
 
+/* ─── Roster block ──────────────────────────────────────── */
+.roster-block {
+  margin-bottom: 10px;
+}
+
+.roster-block-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px 0 4px;
+}
+
+.roster-block-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+}
+
+.roster-counts {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 0.65rem;
+}
+
+.roster-active  { color: var(--green); font-weight: 700; }
+.roster-sep     { color: var(--text-3); }
+.roster-avail   { color: var(--text-3); }
+.roster-out     { color: var(--red); font-weight: 600; margin-left: 4px; }
+
+.roster-dancer {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2px 0;
+}
+.roster-dancer.out { opacity: 0.6; }
+
+.roster-status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.roster-status-dot.active    { background: var(--green); }
+.roster-status-dot.available { background: var(--text-3); }
+.roster-status-dot.out       { background: var(--red); }
+
+.roster-name    { font-size: 0.7rem; color: var(--text-2); flex: 1; }
+.roster-section { font-size: 0.62rem; color: var(--text-3); }
+
+/* ─── Notification rows ──────────────────────────────────── */
+.notif-row {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+.notif-row:last-of-type { border-bottom: none; }
+
+.notif-icon { font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+
+.notif-body { flex: 1; min-width: 0; }
+
+.notif-to {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.notif-msg {
+  font-size: 0.65rem;
+  color: var(--text-3);
+  line-height: 1.35;
+  margin-top: 1px;
+}
+
 /* ─── Right sidebar (activity) ─────────────────────────── */
 .sidebar-right {
   background: var(--sidebar-bg);
@@ -696,6 +768,64 @@ html, body {
   line-height: 1.4;
 }
 .activity-row:last-child { border-bottom: none; }
+
+/* ─── Calendar / Schedule ───────────────────────────────── */
+.cal-add-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  padding: 1px 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.1s, color 0.1s;
+}
+.cal-add-btn:hover { background: var(--surface-2); color: var(--accent); }
+
+.cal-form {
+  display: flex; flex-direction: column; gap: 5px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.cal-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.cal-input:focus { border-color: var(--accent); }
+.cal-input::placeholder { color: var(--text-3); }
+/* style datetime-local natively */
+.cal-input[type="datetime-local"] { color-scheme: dark; }
+
+.cal-event-row {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cal-event-row:last-of-type { border-bottom: none; }
+
+.cal-event-time {
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+  padding-top: 1px;
+  min-width: 36px;
+}
+
+.cal-event-title {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  line-height: 1.35;
+}
 
 /* ─── Button ────────────────────────────────────────────── */
 .btn {
