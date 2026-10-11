@@ -215,6 +215,32 @@ html, body {
 
 .person-row.is-agent .person-name { color: var(--text-1); font-weight: 700; }
 
+/* Agent avatars: icon-based, no initials */
+.agent-avatar {
+  border-radius: 8px !important;
+  color: rgba(255,255,255,0.95);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+  position: relative;
+}
+
+/* Subtle pulse ring on agent avatars in sidebar */
+.person-row.is-agent .agent-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  border: 1.5px solid;
+  border-color: inherit;
+  opacity: 0.3;
+  animation: agent-ring-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes agent-ring-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(1.04); }
+}
+
 .ai-badge {
   font-size: 0.58rem;
   font-weight: 800;
@@ -544,25 +570,27 @@ html, body {
 }
 
 .typing-bubble {
-  display: flex; align-items: center; gap: 3px;
+  display: flex; align-items: center; gap: 4px;
   background: var(--surface);
-  border-radius: 18px;
-  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 9px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 .typing-bubble span {
   display: block;
-  width: 6px; height: 6px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--text-3);
-  animation: typing 1.3s ease-in-out infinite;
+  background: var(--accent);
+  animation: typing 1.4s ease-in-out infinite;
 }
-.typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
-.typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+.typing-bubble span:nth-child(2) { animation-delay: 0.22s; }
+.typing-bubble span:nth-child(3) { animation-delay: 0.44s; }
 
 @keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); background: var(--text-3); }
-  30%           { transform: translateY(-5px); background: var(--text-2); }
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-6px); opacity: 1; }
 }
 
 .typing-label {

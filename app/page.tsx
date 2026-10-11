@@ -50,6 +50,34 @@ function timeLabel(iso: string): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+// ── SVG icon for AI agents (role-based, no emoji) ───────────────
+function AgentIcon({ name, size = 18 }: { name: string; size?: number }) {
+  const n = name.toLowerCase();
+  // Medical
+  if (n.includes("med") || n.includes("health"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="10" y="3" width="4" height="18" rx="2" fill="currentColor"/><rect x="3" y="10" width="18" height="4" rx="2" fill="currentColor"/></svg>;
+  // Security
+  if (n.includes("sec") || n.includes("guard") || n.includes("safe"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.4C16.5 21.3 20 17 20 12V6L12 2z" fill="currentColor" fillOpacity=".9"/></svg>;
+  // Supplies/logistics
+  if (n.includes("suppl") || n.includes("box") || n.includes("stock"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" stroke="currentColor" strokeWidth="1.8" fill="none"/><path d="M3 8l9 5 9-5M12 13v8" stroke="currentColor" strokeWidth="1.8"/></svg>;
+  // Morale/energy/hype
+  if (n.includes("hype") || n.includes("morale") || n.includes("energy"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H13L13 2z" fill="currentColor"/></svg>;
+  // Swap/substitute
+  if (n.includes("swap") || n.includes("sub") || n.includes("replac"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 4l-4 4 4 4M17 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M3 8h18M3 16h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M7 20l-4-4 4-4M17 20l4-4-4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
+  // Floor/logistics
+  if (n.includes("floor") || n.includes("logist") || n.includes("map"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="3" fill="currentColor"/><path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7z" stroke="currentColor" strokeWidth="1.8" fill="none"/></svg>;
+  // Alex / command
+  if (n.includes("alex") || n.includes("command") || n.includes("captain"))
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="currentColor"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none"/><path d="M18 4c1.5 1 2.5 2.7 2.5 4.5 0 1.5-.6 2.9-1.5 3.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none"/><path d="M6 4C4.5 5 3.5 6.7 3.5 8.5c0 1.5.6 2.9 1.5 3.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none"/></svg>;
+  // Default bot
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="5" y="8" width="14" height="10" rx="3" fill="currentColor" fillOpacity=".9"/><circle cx="9" cy="13" r="1.5" fill="white" fillOpacity=".9"/><circle cx="15" cy="13" r="1.5" fill="white" fillOpacity=".9"/><path d="M9 18v2M15 18v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><rect x="10" y="4" width="4" height="4" rx="1" fill="currentColor" fillOpacity=".7"/><path d="M12 4V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
+}
+
 // THON ribbon SVG icon
 function ThonRibbon() {
   return (
@@ -235,8 +263,12 @@ export default function Home() {
     new Set(cards.filter(c => !agentNames.has(c.author) && c.author !== "system").map(c => c.author))
   );
 
-  // Working card IDs (agent is processing)
+  // Cards currently being processed by an agent
   const workingCards = cards.filter(c => c.status === "working" && !agentNames.has(c.author));
+  // Which agents are actively processing right now
+  const busyAgents = state.agents.filter(a =>
+    workingCards.some(() => true) // any working card = show first available agent typing
+  );
 
   // Substitution cards (dancer swap events from teammate C's backend)
   const subCards = cards.filter(c => c.tag === "substitute");
@@ -271,8 +303,8 @@ export default function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
               >
-                <div className="person-avatar" style={{ background: avatarColor(agent.name), borderRadius: 6 }}>
-                  {initials(agent.name)}
+                <div className="person-avatar agent-avatar" style={{ background: avatarColor(agent.name) }}>
+                  <AgentIcon name={agent.name} size={15} />
                 </div>
                 <span className="person-name">{agent.name}</span>
                 <span className="ai-badge">AI</span>
@@ -392,10 +424,10 @@ export default function Home() {
                   )}
                   <div style={{ display: "flex", gap: 10 }}>
                     <div
-                      className="msg-avatar"
+                      className={`msg-avatar${isAgent ? " agent-avatar" : ""}`}
                       style={{ background: avatarColor(card.author) }}
                     >
-                      {initials(card.author)}
+                      {isAgent ? <AgentIcon name={card.author} size={17} /> : initials(card.author)}
                     </div>
                     <div className="msg-content-col">
                       {!sameAuthor && (
@@ -438,27 +470,26 @@ export default function Home() {
             })}
           </AnimatePresence>
 
-          {/* Typing indicator when agent is processing */}
+          {/* Typing indicator — shown for each actively-processing agent */}
           <AnimatePresence>
-            {workingCards.length > 0 && state.agents.length > 0 && (
+            {busyAgents.map(agent => (
               <motion.div
+                key={`typing-${agent._id}`}
                 className="typing-row"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.2 }}
               >
-                <div
-                  className="typing-avatar"
-                  style={{ background: avatarColor(state.agents[0].name) }}
-                >
-                  {initials(state.agents[0].name)}
+                <div className="typing-avatar agent-avatar" style={{ background: avatarColor(agent.name) }}>
+                  <AgentIcon name={agent.name} size={15} />
                 </div>
                 <div className="typing-bubble">
                   <span /><span /><span />
                 </div>
-                <span className="typing-label">{state.agents[0].name} is responding…</span>
+                <span className="typing-label">{agent.name} is on it…</span>
               </motion.div>
-            )}
+            ))}
           </AnimatePresence>
 
           <div ref={feedEndRef} />
