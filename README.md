@@ -18,6 +18,7 @@
 - [Meet the agents](#-meet-the-agents)
 - [Try it yourself](#-try-it-yourself)
 - [Self-improving agents (evolve)](#-self-improving-agents-evolve)
+- [Judging criteria](#-judging-criteria)
 - [Architecture & tech stack](#-architecture--tech-stack)
 - [Run it locally](#-run-it-locally)
 - [Prize tracks](#-prize-tracks)
@@ -142,6 +143,19 @@ The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`e
 
 </details>
 
+## 🎯 Judging criteria
+
+**The problem:** turn free-text floor reports into 5 issue types × 3 severity levels, following THON's own triage policy (`critical` / `urgent` / `routine`). The original prompt never states that policy, so the agent has to infer it from 12 train examples and apply it to cases it has never seen.
+
+| Criterion | Weight | Our evidence |
+|---|---|---|
+| **Measurable improvement** | 40% | **Held-out tests (never shown to the optimizer): 1/6 → 4/6** (17% → 67%). **Fresh tests written after the run** (12 new cases × 2 runs): **2/24 → 24/24** (8% → 100%), reproducible with `npx tsx scripts/fresh-eval.ts`. Train: 0/12 → 11/12. |
+| **Improvement-loop design** | 30% | Every round feeds the optimizer the exact failing cases and the words each one needed. A rewrite replaces the current prompt **only if it scores higher** on train. Held-out and fresh tests never enter the loop. |
+| **Effective parallelism** | 20% | **4 rewrites are generated and scored in parallel** each round, throttled to stay under Luminal's rate limit. Round 1's best-of-4 took train from 0/12 to 11/12 in a single round. |
+| **Demo & clarity** | 10% | One command reproduces it (`npm run evolve -- Alex`). The `/evolve` page shows baseline, rounds and held-out results; the raw run is in [`evolve-log.txt`](evolve-log.txt). |
+
+> **Limits we know about:** the test sets are small, and the results come from one evolve run. We wrote the fresh tests after the run, labeled with the same THON policy as the train tests. The 4 parallel candidates differ by sampling, not by strategy; giving each one its own strategy is first on our [what's next](#-whats-next) list.
+
 ## 🧱 Architecture & tech stack
 
 **1. The live loop:** a card goes in, the right agent answers, a captain takes it.
@@ -227,8 +241,11 @@ To improve an agent, run `npm run evolve -- Alex` and open `/evolve`.
 | Track | How Huddle fits |
 |---|---|
 | **YC RFS Fall 2026: Multiplayer AI** | One live board the whole team watches. Agents dispatch, humans claim ("I'm on it"), and anyone can steer by spawning a new agent in one sentence. |
-| **Luminal: Self-Improving Agent Team** | `evolve.ts` runs 4 prompt candidates in parallel per round on DeepSeek via Luminal: baseline, then improving rounds, then held-out proof (**1/6 → 4/6**). |
+| **Luminal: Self-Improving Agent Team** | `evolve.ts` runs 4 prompt candidates in parallel per round on DeepSeek via Luminal: baseline, then improving rounds, then held-out proof (**1/6 → 4/6**), plus fresh tests written after the run (**2/24 → 24/24**). |
 | **MongoDB: Highest-Aura Use** | Change streams *are* the agent runtime. Each trigger is a stored MongoDB filter, adding an agent is inserting a document, and an atomic `findOneAndUpdate` gives each card exactly one agent. |
+| **Bloomerang: AI Agent for Volunteer Coordinators** | The agents do a THON coordinator's busywork: picking who goes and their backup, reshuffling shifts when someone drops out, and drafting the texts and emails. **The coordinator stays in charge:** agents only add cards and drafts, never edit a human's card, and a captain claims the task and sends the message. |
+
+> 🎙️ **Coordinator interview:** _to add: who we talked to and what part of their week they'd hand off._
 
 ## 🧗 Challenges & what we learned
 
@@ -243,6 +260,7 @@ To improve an agent, run `npm run evolve -- Alex` and open `/evolve`.
 
 ## 🔭 What's next
 
+- Give each of the 4 parallel candidates its own strategy (explicit rules, worked examples, a decision checklist, a strict format), and log every candidate's score so the gain from parallel search is visible
 - Actually send the drafted messages (SMS or Slack) after a captain approves them
 - Sync rosters and shifts from THON's real volunteer system, not a static list
 - Run evolve on every agent automatically, using real incidents as new tests
