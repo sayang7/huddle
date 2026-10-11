@@ -144,18 +144,28 @@ The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`e
 
 ## 🧱 Architecture & tech stack
 
+**1. The live loop:** a card goes in, the right agent answers, a captain takes it.
+
+```mermaid
+flowchart TD
+    C["Captain posts a card with a tag"] --> M[("MongoDB Atlas: cards")]
+    M -->|"change stream: the agent whose trigger filter matches"| W["worker.ts"]
+    W -->|"prompt via lib/llm.ts"| L["DeepSeek on Luminal"]
+    L -->|"reply"| W
+    W -->|"inserts a dispatch card: urgency, who, message"| M
+    M -->|"/api/state, polled every second"| B["Board on every screen"]
+    B -->|"I'm on it"| M
+```
+
+**2. The evolve loop:** agents get better between rounds.
+
 ```mermaid
 flowchart LR
-    C["Captain posts a card"] --> M[("MongoDB Atlas: cards")]
-    M -- "change stream, filtered by each agent's trigger" --> W["worker.ts"]
-    W <--> L["DeepSeek on Luminal (lib/llm.ts)"]
-    W -- "inserts dispatch card" --> M
-    M --> S["/api/state"]
-    S -- "polled every second" --> B["Board on every screen"]
-    B -- "I'm on it" --> M
-    E["evolve.ts"] <--> L
-    E -- "saves the best prompt" --> A[("MongoDB: agents")]
-    A -- "worker reloads agents" --> W
+    T[("MongoDB: tests, train + held-out")] --> E["evolve.ts"]
+    E -->|"4 rewritten prompts in parallel"| L["DeepSeek on Luminal"]
+    L -->|"candidates, scored on train"| E
+    E -->|"saves the best prompt"| A[("MongoDB: agents")]
+    A -->|"change stream: worker reloads"| W["worker.ts"]
 ```
 
 - **Frontend:** Next.js (App Router) + TypeScript, plain CSS, Framer Motion. The board polls `/api/state` every second: no websockets, no auth.
