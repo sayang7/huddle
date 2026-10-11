@@ -148,12 +148,11 @@ The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`e
 
 ```mermaid
 flowchart TD
-    C["Captain posts a card with a tag"] --> M[("MongoDB Atlas: cards")]
-    M -->|"change stream: the agent whose trigger filter matches"| W["worker.ts"]
-    W -->|"prompt via lib/llm.ts"| L["DeepSeek on Luminal"]
-    L -->|"reply"| W
-    W -->|"inserts a dispatch card: urgency, who, message"| M
-    M -->|"/api/state, polled every second"| B["Board on every screen"]
+    C["Captain posts a tagged card"] --> M[("MongoDB: cards")]
+    M -->|"change stream"| W["worker.ts"]
+    W <-->|"lib/llm.ts"| L["DeepSeek on Luminal"]
+    W -->|"dispatch card"| M
+    M -->|"polled every 1s"| B["Board on every screen"]
     B -->|"I'm on it"| M
 ```
 
@@ -161,11 +160,10 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    T[("MongoDB: tests, train + held-out")] --> E["evolve.ts"]
-    E -->|"4 rewritten prompts in parallel"| L["DeepSeek on Luminal"]
-    L -->|"candidates, scored on train"| E
-    E -->|"saves the best prompt"| A[("MongoDB: agents")]
-    A -->|"change stream: worker reloads"| W["worker.ts"]
+    T[("MongoDB: tests")] --> E["evolve.ts"]
+    E <-->|"4 rewrites per round"| L["DeepSeek on Luminal"]
+    E -->|"best prompt"| A[("MongoDB: agents")]
+    A -->|"reload"| W["worker.ts"]
 ```
 
 - **Frontend:** Next.js (App Router) + TypeScript, plain CSS, Framer Motion. The board polls `/api/state` every second: no websockets, no auth.
