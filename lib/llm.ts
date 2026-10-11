@@ -16,9 +16,9 @@ async function callLlm(system: string, user: string): Promise<Response> {
         { role: "user", content: user },
       ],
       temperature: 0.7,
-      // DeepSeek spends ~300-400 tokens reasoning before it answers;
-      // at 400 the answer was often cut off or empty.
-      max_tokens: 1500,
+      // DeepSeek reasons before it answers: ~300-400 tokens for a card reply,
+      // ~1500+ for evolve's prompt rewrites. Too low a cap returns empty content.
+      max_tokens: 4000,
     }),
   });
 }
