@@ -12,7 +12,7 @@ function stringifyIds<T extends { _id?: unknown }>(
 export async function GET() {
   const db = await getDb();
 
-  const [cards, feed, agents, dancers, notifications, events, pendingActions, contacts, itinerary] =
+  const [cards, feed, agents, dancers, notifications, events, pendingActions, contacts, itinerary, chat, captains] =
     await Promise.all([
       db.collection("cards").find().sort({ createdAt: -1 }).limit(60).toArray(),
       db.collection("feed").find().sort({ at: -1 }).limit(40).toArray(),
@@ -23,6 +23,8 @@ export async function GET() {
       db.collection("pendingActions").find({ status: "pending" }).sort({ createdAt: -1 }).limit(10).toArray(),
       db.collection("contacts").find().toArray(),
       db.collection("itinerary").find().sort({ time: 1 }).toArray(),
+      db.collection("chat").find().sort({ at: 1 }).limit(120).toArray(),
+      db.collection("captains").find().sort({ joinedAt: 1 }).toArray(),
     ]);
 
   return NextResponse.json({
@@ -35,5 +37,7 @@ export async function GET() {
     pendingActions: stringifyIds(pendingActions),
     contacts: stringifyIds(contacts),
     itinerary: stringifyIds(itinerary),
+    chat: stringifyIds(chat),
+    captains: stringifyIds(captains),
   });
 }
