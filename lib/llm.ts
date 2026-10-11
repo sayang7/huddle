@@ -16,7 +16,9 @@ async function callLlm(system: string, user: string): Promise<Response> {
         { role: "user", content: user },
       ],
       temperature: 0.7,
-      max_tokens: 400,
+      // DeepSeek reasons before it answers: ~300-400 tokens for a card reply,
+      // ~1500+ for evolve's prompt rewrites. Too low a cap returns empty content.
+      max_tokens: 4000,
     }),
   });
 }
@@ -26,7 +28,8 @@ export async function llm(system: string, user: string): Promise<string> {
 
   if (!res.ok) {
     const text = await res.text();
-    // retry once
+    // retry once, after a pause (Luminal returns 429 when too many calls run at once)
+    await new Promise((r) => setTimeout(r, 2000));
     res = await callLlm(system, user);
     if (!res.ok) {
       const text2 = await res.text();
@@ -42,5 +45,8 @@ export async function llm(system: string, user: string): Promise<string> {
   // DeepSeek reasoning models put the answer in content;
   // reasoning_content is the chain-of-thought (we discard it)
   const raw = data.choices[0].message.content ?? "";
-  return raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  const answer = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  // Never post a blank card: throwing lets the worker release the card
+  if (!answer) throw new Error("LLM returned an empty reply");
+  return answer;
 }

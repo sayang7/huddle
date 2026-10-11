@@ -575,7 +575,7 @@ export default function Home() {
             </motion.button>
           </div>
           <div className="compose-toolbar">
-            {["request","medical","substitute","supplies","logistics","morale","security","schedule"].map(t => (
+            {["request","medical","substitute","supplies","logistics","morale","security","schedule","outreach"].map(t => (
               <button
                 key={t}
                 type="button"
