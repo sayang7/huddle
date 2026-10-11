@@ -53,6 +53,36 @@ interface CalEvent {
   createdBy: string;
 }
 
+interface PendingAction {
+  _id: string;
+  type: string;
+  agentName: string;
+  description: string;
+  to: string;
+  phone: string | null;
+  message: string;
+  status: "pending" | "approved" | "dismissed";
+  createdAt: string;
+}
+
+interface Contact {
+  _id: string;
+  name: string;
+  role: string;
+  phone: string;
+  location: string;
+  assignments: string[];
+}
+
+interface ItineraryItem {
+  _id: string;
+  title: string;
+  description: string;
+  type: string;
+  time: string;
+  offsetHours: number;
+}
+
 interface State {
   cards: Card[];
   feed: FeedItem[];
@@ -60,6 +90,9 @@ interface State {
   dancers: Dancer[];
   notifications: Notification[];
   events: CalEvent[];
+  pendingActions: PendingAction[];
+  contacts: Contact[];
+  itinerary: ItineraryItem[];
 }
 
 // Deterministic avatar color from name
@@ -72,59 +105,44 @@ function avatarColor(name: string): string {
 function initials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
-
 function timeLabel(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// ── SVG icon for AI agents (role-based, no emoji) ───────────────
+// ── SVG icon for AI agents (role-based) ─────────────────────
 function AgentIcon({ name, size = 18 }: { name: string; size?: number }) {
   const n = name.toLowerCase();
-  // Medical
   if (n.includes("med") || n.includes("health"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="10" y="3" width="4" height="18" rx="2" fill="currentColor"/><rect x="3" y="10" width="18" height="4" rx="2" fill="currentColor"/></svg>;
-  // Security
   if (n.includes("sec") || n.includes("guard") || n.includes("safe"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.4C16.5 21.3 20 17 20 12V6L12 2z" fill="currentColor" fillOpacity=".9"/></svg>;
-  // Supplies/logistics
   if (n.includes("suppl") || n.includes("box") || n.includes("stock"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" stroke="currentColor" strokeWidth="1.8" fill="none"/><path d="M3 8l9 5 9-5M12 13v8" stroke="currentColor" strokeWidth="1.8"/></svg>;
-  // Morale/energy/hype
   if (n.includes("hype") || n.includes("morale") || n.includes("energy"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H13L13 2z" fill="currentColor"/></svg>;
-  // Swap/substitute
   if (n.includes("swap") || n.includes("sub") || n.includes("replac"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M7 4l-4 4 4 4M17 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M3 8h18M3 16h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M7 20l-4-4 4-4M17 20l4-4-4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
-  // Floor/logistics
-  if (n.includes("floor") || n.includes("logist") || n.includes("map"))
+  if (n.includes("ops") || n.includes("floor") || n.includes("logist"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="3" fill="currentColor"/><path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7z" stroke="currentColor" strokeWidth="1.8" fill="none"/></svg>;
-  // Alex / command
   if (n.includes("alex") || n.includes("command") || n.includes("captain"))
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="currentColor"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none"/><path d="M18 4c1.5 1 2.5 2.7 2.5 4.5 0 1.5-.6 2.9-1.5 3.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none"/><path d="M6 4C4.5 5 3.5 6.7 3.5 8.5c0 1.5.6 2.9 1.5 3.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none"/></svg>;
-  // Default bot
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="5" y="8" width="14" height="10" rx="3" fill="currentColor" fillOpacity=".9"/><circle cx="9" cy="13" r="1.5" fill="white" fillOpacity=".9"/><circle cx="15" cy="13" r="1.5" fill="white" fillOpacity=".9"/><path d="M9 18v2M15 18v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><rect x="10" y="4" width="4" height="4" rx="1" fill="currentColor" fillOpacity=".7"/><path d="M12 4V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
 }
 
-// THON ribbon SVG icon
+// THON ribbon SVG
 function ThonRibbon() {
   return (
     <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-      {/* Loop top-left */}
       <path d="M11 13 C11 13 2 9 2 4.5 C2 2 4 0.5 6.5 0.5 C9 0.5 11 2.5 11 5" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Loop top-right */}
       <path d="M11 13 C11 13 20 9 20 4.5 C20 2 18 0.5 15.5 0.5 C13 0.5 11 2.5 11 5" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Left tail */}
       <path d="M11 13 L7 22 L5 25" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      {/* Right tail */}
       <path d="M11 13 L15 22 L17 25" stroke="#1E407C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      {/* Center knot fill */}
       <circle cx="11" cy="13" r="2.5" fill="#1E407C"/>
     </svg>
   );
 }
 
-// Detect urgency keywords in text for subtle tinting
 function urgencyClass(text: string): string {
   const t = text.toLowerCase();
   if (t.includes("critical") || t.includes("unresponsive") || t.includes("collapsed")) return "urg-critical";
@@ -133,12 +151,51 @@ function urgencyClass(text: string): string {
   return "";
 }
 
+// ── Section map: visual grid of blocks ──────────────────────
+function SectionMap({ dancers }: { dancers: Dancer[] }) {
+  const blocks = ["A", "B", "C", "D"];
+  const sectionsByBlock: Record<string, string[]> = {
+    A: ["112","115","120","125"],
+    B: ["204","208","213","218"],
+    C: ["301","306","311","316"],
+    D: ["401","407","412","418"],
+  };
+
+  return (
+    <div className="section-map">
+      {blocks.map(block => (
+        <div key={block} className="map-block">
+          <div className="map-block-label">Block {block}</div>
+          <div className="map-sections">
+            {sectionsByBlock[block].map(sec => {
+              const active = dancers.filter(d => d.section === sec && d.status === "active").length;
+              const available = dancers.filter(d => d.section === sec && d.status === "available").length;
+              const out = dancers.filter(d => d.section === sec && d.status === "out").length;
+              const cls = out > 0 ? "map-sec has-out" : active === 0 ? "map-sec empty" : "map-sec ok";
+              return (
+                <div key={sec} className={cls} title={`§${sec}: ${active} active, ${available} backup${out > 0 ? `, ${out} out` : ""}`}>
+                  <span className="map-sec-num">{sec}</span>
+                  <span className="map-sec-count">{active}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Home() {
   const [myName, setMyName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [showEntry, setShowEntry] = useState(false);
+  const [editingName, setEditingName] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [state, setState] = useState<State>({ cards: [], feed: [], agents: [], dancers: [], notifications: [], events: [] });
+  const [state, setState] = useState<State>({
+    cards: [], feed: [], agents: [], dancers: [],
+    notifications: [], events: [], pendingActions: [], contacts: [], itinerary: [],
+  });
   const [showCalForm, setShowCalForm] = useState(false);
   const [calTitle, setCalTitle] = useState("");
   const [calTime, setCalTime] = useState("");
@@ -148,6 +205,8 @@ export default function Home() {
   const [spawning, setSpawning] = useState(false);
   const [spawnError, setSpawnError] = useState("");
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [resolvingAction, setResolvingAction] = useState<string | null>(null);
+  const [activePanel, setActivePanel] = useState<"roster" | "contacts" | "schedule">("roster");
   const feedEndRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -166,7 +225,6 @@ export default function Home() {
     };
     poll();
     pollRef.current = setInterval(poll, 1000);
-    // Safety: never hang on splash longer than 3s
     const t = setTimeout(() => setLoading(false), 3000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); clearTimeout(t); };
   }, []);
@@ -182,6 +240,8 @@ export default function Home() {
     localStorage.setItem("huddle-name", n);
     setMyName(n);
     setShowEntry(false);
+    setEditingName(false);
+    setNameInput("");
   }
 
   const agentNames = new Set(state.agents.map(a => a.name));
@@ -189,7 +249,6 @@ export default function Home() {
   async function submitCard(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !myName) return;
-    // @mention → force request tag
     const mentionedAgent = state.agents.find(a =>
       title.toLowerCase().includes(`@${a.name.toLowerCase()}`)
     );
@@ -199,7 +258,6 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, body: "", tag: effectiveTag, author: myName }),
     });
-    // If tagged as schedule, also create a calendar event
     if (effectiveTag === "schedule") {
       await fetch("/api/events", {
         method: "POST",
@@ -236,6 +294,17 @@ export default function Home() {
     } finally { setClaiming(null); }
   }
 
+  async function resolveAction(actionId: string, decision: "approved" | "dismissed") {
+    setResolvingAction(actionId);
+    try {
+      await fetch("/api/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actionId, decision }),
+      });
+    } finally { setResolvingAction(null); }
+  }
+
   async function spawnAgent(e: React.FormEvent) {
     e.preventDefault();
     if (!spawnDesc.trim()) return;
@@ -253,7 +322,7 @@ export default function Home() {
     finally { setSpawning(false); }
   }
 
-  // ── Loading splash ──────────────────────────────────────
+  // ── Loading splash ─────────────────────────────────────────
   if (loading) {
     return (
       <div className="name-overlay">
@@ -265,15 +334,13 @@ export default function Home() {
         >
           <div className="splash-logo">huddle<span>.</span></div>
           <div className="splash-sub">THON 2026 · Floor Command</div>
-          <div className="splash-dots">
-            <span /><span /><span />
-          </div>
+          <div className="splash-dots"><span /><span /><span /></div>
         </motion.div>
       </div>
     );
   }
 
-  // ── Name entry ──────────────────────────────────────────
+  // ── Name entry ─────────────────────────────────────────────
   if (showEntry) {
     return (
       <div className="name-overlay">
@@ -293,12 +360,7 @@ export default function Home() {
             onChange={e => setNameInput(e.target.value)}
             autoFocus
           />
-          <motion.button
-            type="submit"
-            className="btn name-btn"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
+          <motion.button type="submit" className="btn name-btn" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             Join the floor
           </motion.button>
         </motion.form>
@@ -306,38 +368,62 @@ export default function Home() {
     );
   }
 
-  // ── Build message groups ────────────────────────────────
-  // State returns newest-first; reverse for oldest-first display
-  const cards = [...state.cards].reverse();
+  // ── Inline name edit overlay ───────────────────────────────
+  if (editingName) {
+    return (
+      <div className="name-overlay">
+        <motion.form
+          className="name-card"
+          onSubmit={submitName}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="name-logo">Change name</div>
+          <div className="name-sub">Currently: {myName}</div>
+          <input
+            className="name-input"
+            placeholder="New name"
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            autoFocus
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <motion.button type="submit" className="btn name-btn" style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+              Save
+            </motion.button>
+            <motion.button type="button" className="btn btn-ghost" onClick={() => { setEditingName(false); setNameInput(""); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+              Cancel
+            </motion.button>
+          </div>
+        </motion.form>
+      </div>
+    );
+  }
 
-  // Build unique authors for sidebar (from cards)
+  const cards = [...state.cards].reverse();
   const humanAuthors = Array.from(
     new Set(cards.filter(c => !agentNames.has(c.author) && c.author !== "system").map(c => c.author))
   );
-
-  // Cards currently being processed by an agent
   const workingCards = cards.filter(c => c.status === "working" && !agentNames.has(c.author));
-  // Which agents are actively processing right now
-  const busyAgents = state.agents.filter(a =>
-    workingCards.some(() => true) // any working card = show first available agent typing
-  );
-
-  // Substitution cards
+  const busyAgents = state.agents.filter(() => workingCards.length > 0).slice(0, 1);
   const subCards = cards.filter(c => c.tag === "substitute");
-
-  // Open critical/hazard cards (unclaimed, high urgency)
   const hazardCards = cards.filter(c =>
     !agentNames.has(c.author) && c.author !== "system" &&
     c.status !== "claimed" && urgencyClass(c.title) === "urg-critical"
   );
-
-  // Dancer roster grouped by block
-  const rosterByBlock = ["A", "B", "C", "D"].map(block => ({
+  const rosterByBlock = ["A","B","C","D"].map(block => ({
     block,
     active: state.dancers.filter(d => d.block === block && d.status === "active"),
     available: state.dancers.filter(d => d.block === block && d.status === "available"),
     out: state.dancers.filter(d => d.block === block && d.status === "out"),
   }));
+
+  // Merge itinerary + user events into one sorted schedule
+  const allSchedule = [
+    ...state.itinerary.map(i => ({ _id: i._id, title: i.title, time: i.time, type: i.type, source: "plan" as const })),
+    ...state.events.map(e => ({ _id: e._id, title: e.title, time: e.time, type: "event", source: "added" as const })),
+  ].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
   return (
     <div className="app-shell">
@@ -352,7 +438,6 @@ export default function Home() {
         </div>
 
         <div className="sidebar-scroll">
-          {/* AI teammates */}
           <div className="sidebar-section-label">AI Teammates</div>
           <AnimatePresence>
             {state.agents.map(agent => (
@@ -373,7 +458,6 @@ export default function Home() {
             ))}
           </AnimatePresence>
 
-          {/* Human captains */}
           {humanAuthors.length > 0 && (
             <>
               <div className="sidebar-section-label" style={{ marginTop: 12 }}>Captains</div>
@@ -389,14 +473,13 @@ export default function Home() {
             </>
           )}
 
-          {/* Spawn new agent */}
           <div className="spawn-section" style={{ marginTop: 16 }}>
             <div className="spawn-label">Add AI Teammate</div>
             <form className="spawn-form" onSubmit={spawnAgent}>
               <textarea
                 className="spawn-input"
                 rows={3}
-                placeholder="e.g. Flag anything mentioning heat exhaustion"
+                placeholder="e.g. Alert on any heat exhaustion mention"
                 value={spawnDesc}
                 onChange={e => setSpawnDesc(e.target.value)}
                 disabled={spawning}
@@ -413,6 +496,10 @@ export default function Home() {
               </motion.button>
             </form>
           </div>
+
+          <div className="sidebar-nav-links">
+            <a href="/evolve" className="sidebar-link">Evolve results</a>
+          </div>
         </div>
       </aside>
 
@@ -422,7 +509,73 @@ export default function Home() {
           <span className="chat-header-hash">#</span>
           <span className="chat-header-name">floor</span>
           <span className="chat-header-desc">— every request gets a response</span>
+          <div className="chat-header-right">
+            <span className="header-live-dot" />
+            <span className="header-live-label">LIVE · 46h</span>
+          </div>
         </div>
+
+        {/* Pending actions banner — agents asking for approval */}
+        <AnimatePresence>
+          {state.pendingActions.length > 0 && (
+            <motion.div
+              className="actions-banner"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <div className="actions-banner-header">
+                <span className="actions-banner-icon">⚡</span>
+                <span className="actions-banner-title">
+                  {state.pendingActions.length} agent action{state.pendingActions.length > 1 ? "s" : ""} awaiting approval
+                </span>
+              </div>
+              <div className="actions-list">
+                <AnimatePresence>
+                  {state.pendingActions.map(action => (
+                    <motion.div
+                      key={action._id}
+                      className="action-row"
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 6 }}
+                    >
+                      <div className="action-agent-badge" style={{ background: avatarColor(action.agentName) }}>
+                        <AgentIcon name={action.agentName} size={11} />
+                      </div>
+                      <div className="action-desc">
+                        <span className="action-agent-name">{action.agentName}</span>
+                        <span className="action-text"> wants to text: </span>
+                        <span className="action-message">&quot;{action.description.replace(/^Text [^:]+: /, "").replace(/^"/, "").replace(/"$/, "")}&quot;</span>
+                        {action.to && <span className="action-to"> → {action.to}</span>}
+                      </div>
+                      <div className="action-btns">
+                        <motion.button
+                          className="btn-approve"
+                          disabled={resolvingAction === action._id}
+                          onClick={() => resolveAction(action._id, "approved")}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.94 }}
+                        >
+                          {resolvingAction === action._id ? "…" : "Send"}
+                        </motion.button>
+                        <motion.button
+                          className="btn-dismiss"
+                          disabled={resolvingAction === action._id}
+                          onClick={() => resolveAction(action._id, "dismissed")}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.94 }}
+                        >
+                          Skip
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {hazardCards.length > 0 && (
@@ -450,21 +603,14 @@ export default function Home() {
               const isClaimed = card.status === "claimed";
               const isWorking = card.status === "working";
               const canClaim = !isAgent && !isSystem && !isClaimed && !isWorking;
-
               const prev = i > 0 ? cards[i - 1] : null;
               const sameAuthor = prev?.author === card.author &&
                 (new Date(card.createdAt).getTime() - new Date(prev.createdAt).getTime()) < 5 * 60 * 1000;
-
               const urgClass = isAgent ? urgencyClass(card.title) : "";
 
               if (isSystem) {
                 return (
-                  <motion.div
-                    key={card._id}
-                    className="sys-msg"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
+                  <motion.div key={card._id} className="sys-msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     {card.title}
                   </motion.div>
                 );
@@ -483,10 +629,7 @@ export default function Home() {
                     <span className="msg-side-time">{timeLabel(card.createdAt)}</span>
                   )}
                   <div style={{ display: "flex", gap: 10 }}>
-                    <div
-                      className={`msg-avatar${isAgent ? " agent-avatar" : ""}`}
-                      style={{ background: avatarColor(card.author) }}
-                    >
+                    <div className={`msg-avatar${isAgent ? " agent-avatar" : ""}`} style={{ background: avatarColor(card.author) }}>
                       {isAgent ? <AgentIcon name={card.author} size={17} /> : initials(card.author)}
                     </div>
                     <div className="msg-content-col">
@@ -503,11 +646,7 @@ export default function Home() {
                           <span className="msg-tag" data-tag={card.tag}>{card.tag}</span>
                         )}
                         {isClaimed && card.claimedBy && (
-                          <motion.span
-                            className="claimed-line"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
+                          <motion.span className="claimed-line" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             ✓ {card.claimedBy} is on it
                           </motion.span>
                         )}
@@ -530,7 +669,6 @@ export default function Home() {
             })}
           </AnimatePresence>
 
-          {/* Typing indicator — shown for each actively-processing agent */}
           <AnimatePresence>
             {busyAgents.map(agent => (
               <motion.div
@@ -544,9 +682,7 @@ export default function Home() {
                 <div className="typing-avatar agent-avatar" style={{ background: avatarColor(agent.name) }}>
                   <AgentIcon name={agent.name} size={15} />
                 </div>
-                <div className="typing-bubble">
-                  <span /><span /><span />
-                </div>
+                <div className="typing-bubble"><span /><span /><span /></div>
                 <span className="typing-label">{agent.name} is on it…</span>
               </motion.div>
             ))}
@@ -560,149 +696,199 @@ export default function Home() {
           <div className="compose-top">
             <input
               className="compose-input"
-              placeholder={`Message the floor, ${myName}… try @Alex, or pick a tag below`}
+              placeholder={`Message the floor${myName ? `, ${myName}` : ""}… try @Alex, or pick a tag`}
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
             />
-            <motion.button
-              type="submit"
-              className="compose-send"
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.92 }}
-            >
+            <motion.button type="submit" className="compose-send" whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.92 }}>
               ↑
             </motion.button>
           </div>
-          <div className="compose-toolbar">
-            {["request","medical","substitute","supplies","logistics","morale","security","schedule"].map(t => (
-              <button
-                key={t}
-                type="button"
-                className={`compose-tag-btn${tag === t ? " active" : ""}`}
-                onClick={() => setTag(t)}
-              >
-                {t}
-              </button>
-            ))}
+          <div className="compose-footer">
+            <div className="compose-toolbar">
+              {["request","medical","substitute","supplies","logistics","morale","security","schedule"].map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`compose-tag-btn${tag === t ? " active" : ""}`}
+                  onClick={() => setTag(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="compose-name-btn"
+              onClick={() => { setNameInput(myName); setEditingName(true); }}
+              title="Change your name"
+            >
+              {initials(myName) || "?"}
+            </button>
           </div>
         </form>
       </div>
 
-      {/* ── Right sidebar: roster + notifications + activity ── */}
+      {/* ── Right sidebar ── */}
       <aside className="sidebar-right">
 
-        {/* Floor Roster */}
-        <div className="sidebar-section-label">Floor Roster</div>
-        {state.dancers.length === 0 ? (
-          <div className="sub-empty">Loading roster…</div>
-        ) : (
-          rosterByBlock.map(({ block, active, available, out }) => (
-            <div key={block} className="roster-block">
-              <div className="roster-block-header">
-                <span className="roster-block-name">Block {block}</span>
-                <span className="roster-counts">
-                  <span className="roster-active">{active.length}</span>
-                  <span className="roster-sep">/</span>
-                  <span className="roster-avail">{available.length} backup</span>
-                  {out.length > 0 && <span className="roster-out">{out.length} out</span>}
-                </span>
-              </div>
-              <AnimatePresence>
-                {out.map(d => (
-                  <motion.div key={d._id} className="roster-dancer out"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <span className="roster-status-dot out" />
-                    <span className="roster-name">{d.name}</span>
-                    <span className="roster-section">§{d.section}</span>
+        {/* Panel tabs */}
+        <div className="panel-tabs">
+          {(["roster","contacts","schedule"] as const).map(p => (
+            <button
+              key={p}
+              className={`panel-tab${activePanel === p ? " active" : ""}`}
+              onClick={() => setActivePanel(p)}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        {activePanel === "roster" && (
+          <>
+            <SectionMap dancers={state.dancers} />
+            <div className="sidebar-section-label" style={{ marginTop: 12 }}>Dancer Roster</div>
+            {state.dancers.length === 0 ? (
+              <div className="sub-empty">Loading roster…</div>
+            ) : (
+              rosterByBlock.map(({ block, active, available, out }) => (
+                <div key={block} className="roster-block">
+                  <div className="roster-block-header">
+                    <span className="roster-block-name">Block {block}</span>
+                    <span className="roster-counts">
+                      <span className="roster-active">{active.length}</span>
+                      <span className="roster-sep">/</span>
+                      <span className="roster-avail">{available.length} backup</span>
+                      {out.length > 0 && <span className="roster-out">{out.length} out</span>}
+                    </span>
+                  </div>
+                  <AnimatePresence>
+                    {out.map(d => (
+                      <motion.div key={d._id} className="roster-dancer out" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <span className="roster-status-dot out" />
+                        <span className="roster-name">{d.name}</span>
+                        <span className="roster-section">§{d.section}</span>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ))
+            )}
+
+            {subCards.length > 0 && (
+              <>
+                <div className="sidebar-section-label" style={{ marginTop: 14 }}>Swaps</div>
+                {subCards.map(c => (
+                  <div key={c._id} className="sub-row">
+                    <span className="sub-icon">⇄</span>
+                    <span className="sub-text">{c.title}</span>
+                    {c.claimedBy && <span className="sub-claimed">✓ {c.claimedBy}</span>}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {state.notifications.length > 0 && (
+              <>
+                <div className="sidebar-section-label" style={{ marginTop: 14 }}>Sent Alerts</div>
+                <AnimatePresence initial={false}>
+                  {state.notifications.map(n => (
+                    <motion.div key={n._id} className="notif-row" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
+                      <span className="notif-icon">📱</span>
+                      <div className="notif-body">
+                        <div className="notif-to">{n.to}{n.phone ? ` · ${n.phone}` : ""}</div>
+                        <div className="notif-msg">{n.message}</div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </>
+            )}
+          </>
+        )}
+
+        {activePanel === "contacts" && (
+          <>
+            <div className="sidebar-section-label">Committee Staff</div>
+            {state.contacts.length === 0 ? (
+              <div className="sub-empty">Loading contacts…</div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {state.contacts.map(c => (
+                  <motion.div key={c._id} className="contact-row" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div className="contact-avatar" style={{ background: avatarColor(c.name) }}>
+                      {initials(c.name)}
+                    </div>
+                    <div className="contact-info">
+                      <div className="contact-name">{c.name}</div>
+                      <div className="contact-role">{c.role}</div>
+                      <div className="contact-location">{c.location}</div>
+                    </div>
+                    <div className="contact-phone">{c.phone}</div>
                   </motion.div>
                 ))}
               </AnimatePresence>
+            )}
+          </>
+        )}
+
+        {activePanel === "schedule" && (
+          <>
+            <div className="sidebar-section-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span>Schedule</span>
+              <button className="cal-add-btn" onClick={() => setShowCalForm(v => !v)}>+</button>
             </div>
-          ))
-        )}
-
-        {/* Recent notifications from agents */}
-        {state.notifications.length > 0 && (
-          <>
-            <div className="sidebar-section-label" style={{ marginTop: 14 }}>Notifications Sent</div>
-            <AnimatePresence initial={false}>
-              {state.notifications.map(n => (
-                <motion.div key={n._id} className="notif-row"
-                  initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
-                  <span className="notif-icon">📱</span>
-                  <div className="notif-body">
-                    <div className="notif-to">{n.to}{n.phone ? ` · ${n.phone}` : ""}</div>
-                    <div className="notif-msg">{n.message}</div>
-                  </div>
-                </motion.div>
-              ))}
+            <AnimatePresence>
+              {showCalForm && (
+                <motion.form
+                  className="cal-form"
+                  onSubmit={addCalendarEvent}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <input
+                    className="cal-input"
+                    placeholder="Event title"
+                    value={calTitle}
+                    onChange={e => setCalTitle(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="cal-input"
+                    type="datetime-local"
+                    value={calTime}
+                    onChange={e => setCalTime(e.target.value)}
+                  />
+                  <button type="submit" className="btn btn-sm" style={{ width: "100%" }}>Add to schedule</button>
+                </motion.form>
+              )}
             </AnimatePresence>
+            {allSchedule.length === 0 ? (
+              <div className="sub-empty">No schedule yet</div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {allSchedule.map(ev => (
+                  <motion.div key={ev._id} className={`cal-event-row${ev.source === "plan" ? " cal-plan" : ""}`}
+                    data-type={ev.type}
+                    initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
+                    <div className="cal-event-left">
+                      <div className="cal-event-time">
+                        {new Date(ev.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                      {ev.source === "plan" && <span className="cal-plan-badge">plan</span>}
+                    </div>
+                    <div className="cal-event-title">{ev.title}</div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
           </>
         )}
 
-        {/* Substitutions */}
-        {subCards.length > 0 && (
-          <>
-            <div className="sidebar-section-label" style={{ marginTop: 14 }}>Swaps</div>
-            {subCards.map(c => (
-              <div key={c._id} className="sub-row">
-                <span className="sub-icon">⇄</span>
-                <span className="sub-text">{c.title}</span>
-                {c.claimedBy && <span className="sub-claimed">✓ {c.claimedBy}</span>}
-              </div>
-            ))}
-          </>
-        )}
-
-        {/* Schedule / Calendar */}
-        <div className="sidebar-section-label" style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>Schedule</span>
-          <button className="cal-add-btn" onClick={() => setShowCalForm(v => !v)}>+</button>
-        </div>
-        <AnimatePresence>
-          {showCalForm && (
-            <motion.form
-              className="cal-form"
-              onSubmit={addCalendarEvent}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <input
-                className="cal-input"
-                placeholder="Event title"
-                value={calTitle}
-                onChange={e => setCalTitle(e.target.value)}
-                required
-              />
-              <input
-                className="cal-input"
-                type="datetime-local"
-                value={calTime}
-                onChange={e => setCalTime(e.target.value)}
-              />
-              <button type="submit" className="btn btn-sm" style={{ width: "100%" }}>Add to schedule</button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-        {state.events.length === 0 ? (
-          <div className="sub-empty">No events yet — post with #schedule or use +</div>
-        ) : (
-          <AnimatePresence initial={false}>
-            {state.events.map(ev => (
-              <motion.div key={ev._id} className="cal-event-row"
-                initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
-                <div className="cal-event-time">
-                  {new Date(ev.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </div>
-                <div className="cal-event-title">{ev.title}</div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        )}
-
-        {/* Activity feed */}
+        {/* Activity feed — always visible at bottom */}
         <div className="sidebar-section-label" style={{ marginTop: 14 }}>Activity</div>
         <AnimatePresence initial={false}>
           {state.feed.map(item => (

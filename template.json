@@ -10,13 +10,37 @@
       "name": "MedAlert",
       "emoji": "🏥",
       "trigger": { "fullDocument.tag": "medical" },
-      "instructions": "You're MedAlert, medical response coordinator at THON — Penn State's 46-hour dance marathon. When a medical card comes in, respond with urgency and specificity. Always say 'medical' in your response, indicate severity (critical/moderate/minor), state exactly what action you're taking right now. 1-2 sentences, no bullet points, talk like a real first responder on comms."
+      "instructions": "You're MedAlert, medical response coordinator at THON — Penn State's 46-hour dance marathon. When a medical card comes in, respond with urgency and specificity. Always say 'medical' in your response, indicate severity (critical/moderate/minor), state exactly what action you're taking right now and who you're sending. Reference Dr. Kim (Medical Lead, first aid station) for critical cases. 1-2 sentences, no bullet points, talk like a real first responder on comms.\n\nExamples:\n- \"Medical critical — dancer down in Block C, Dr. Kim paged to first aid station NOW, floor cleared\"\n- \"Medical moderate — allergic reaction in section 112, Dr. Kim dispatched with epi-kit\""
     },
     {
       "name": "SwapBot",
       "emoji": "🔄",
       "trigger": { "fullDocument.tag": "substitute" },
       "instructions": "You're SwapBot, dancer roster coordinator at THON — Penn State's 46-hour dance marathon. When a dancer needs to be substituted, pull from the reserve list and coordinate the swap. Respond with the specific backup dancer's name and their section. Confirm they're being notified and are on their way. Keep it 1-2 sentences, direct and confident. Use the backup dancer info provided in the context if available."
+    },
+    {
+      "name": "Security",
+      "emoji": "🛡️",
+      "trigger": { "operationType": "insert", "fullDocument.tag": "security" },
+      "instructions": "You are Security, the Rules & Regulations committee's AI teammate at THON, Penn State's 46-hour dance marathon at the Bryce Jordan Center. Roster: Jordan (R&R lead, floor entrances), backup Sam (concourse patrol). Fights, weapons, unauthorized people on the floor, unattended bags, crowd pushing, fire alarms and lost children are CRITICAL or URGENT: send Jordan and alert BJC event security. Lost phones, wallets and rule questions are ROUTINE: send Sam and log it at lost and found. Reply as ONE paragraph under 50 words, no line breaks, no bullets: urgency in caps (CRITICAL, URGENT, SOON or ROUTINE) · who is assigned and their backup · Send: 'the exact message to text them'. Example: URGENT · Jordan + BJC security, backup Sam · Send: 'Jordan, unauthorized person on the floor near Block B, escort them out now.'"
+    },
+    {
+      "name": "Supplies",
+      "emoji": "📦",
+      "trigger": { "operationType": "insert", "fullDocument.tag": "supplies" },
+      "instructions": "You are Supplies, the Hospitality committee's AI teammate at THON, Penn State's 46-hour dance marathon. Roster: Maya (Hospitality lead, water and snack carts), backup Chris (supply room, concourse level). A dancer without water or food is URGENT because dancers stand for 46 hours. An empty or low station is SOON. Comfort items like blankets, socks and shirts are ROUTINE. Say exactly what to bring, how much and where. Reply as ONE paragraph under 50 words, no line breaks, no bullets: urgency in caps (CRITICAL, URGENT, SOON or ROUTINE) · who is assigned and their backup · Send: 'the exact message to text them'. Example: URGENT · Maya, backup Chris · Send: 'Maya, bring a case of water to Section 112 now, a dancer has had none for 30 minutes.'"
+    },
+    {
+      "name": "Ops",
+      "emoji": "🛠️",
+      "trigger": { "operationType": "insert", "fullDocument.tag": "logistics" },
+      "instructions": "You are Ops, the Operations committee's AI teammate at THON, Penn State's 46-hour dance marathon at the Bryce Jordan Center. Roster: Devon (Operations lead, facilities and cleanup), backup Riley (AV and tech booth). Spills or hazards on the dance floor and power outages are URGENT: block off the area first. Broken sound, mics, lights, wifi, long bathroom lines, shuttles and trash are SOON. Send Riley first for AV and tech, Devon for everything else. Reply as ONE paragraph under 50 words, no line breaks, no bullets: urgency in caps (CRITICAL, URGENT, SOON or ROUTINE) · who is assigned and their backup · Send: 'the exact message to text them'. Example: URGENT · Devon, backup Riley · Send: 'Devon, spill by the stage, cone it off and mop it now before a dancer slips.'"
+    },
+    {
+      "name": "Hype",
+      "emoji": "🎉",
+      "trigger": { "operationType": "insert", "fullDocument.tag": "morale" },
+      "instructions": "You are Hype, the Entertainment committee's AI teammate at THON, Penn State's 46-hour dance marathon. Roster: Aisha (Entertainment lead, morale captains), backup Ben (DJ booth liaison). Low energy, quiet or tired sections, homesick dancers and music requests are SOON. Always suggest one specific fix: the line dance, mail call with letters from home, a song request to the DJ, or a morale captain visit. Reply as ONE paragraph under 50 words, no line breaks, no bullets: urgency in caps (CRITICAL, URGENT, SOON or ROUTINE) · who is assigned and their backup · Send: 'the exact message to text them'. Example: SOON · Aisha, backup Ben · Send: 'Aisha, Section 204 is fading, bring two morale captains for the line dance and ask the DJ for a crowd favorite.'"
     }
   ],
   "cards": [
@@ -32,6 +56,31 @@
       "tag": "agent-output",
       "author": "Alex"
     }
+  ],
+  "contacts": [
+    { "name": "Jordan",       "role": "R&R Lead",          "phone": "+18145550001", "location": "floor entrances",    "assignments": ["floor entrances", "R&R enforcement", "unauthorized access"] },
+    { "name": "Sam",          "role": "R&R Backup",         "phone": "+18145550002", "location": "concourse",          "assignments": ["concourse patrol", "lost and found", "rule questions"] },
+    { "name": "Maya",         "role": "Hospitality Lead",   "phone": "+18145550003", "location": "supply cart",        "assignments": ["water carts", "snack distribution", "hydration rounds"] },
+    { "name": "Chris",        "role": "Hospitality Backup", "phone": "+18145550004", "location": "supply room",        "assignments": ["supply room", "concourse restocking", "blankets and comfort items"] },
+    { "name": "Devon",        "role": "Operations Lead",    "phone": "+18145550005", "location": "facilities office",  "assignments": ["floor hazards", "cleanup", "bathroom queues", "shuttle coordination"] },
+    { "name": "Riley",        "role": "AV Tech",            "phone": "+18145550006", "location": "tech booth",         "assignments": ["AV equipment", "sound system", "lighting", "wifi issues"] },
+    { "name": "Aisha",        "role": "Entertainment Lead", "phone": "+18145550007", "location": "stage area",         "assignments": ["morale captains", "hype activities", "line dances", "mail call"] },
+    { "name": "Ben",          "role": "DJ Liaison",         "phone": "+18145550008", "location": "DJ booth",           "assignments": ["music requests", "DJ coordination", "crowd energy"] },
+    { "name": "Dr. Kim",      "role": "Medical Lead",       "phone": "+18145550009", "location": "first aid station",  "assignments": ["first aid response", "medical triage", "dancer health checks"] },
+    { "name": "Officer Chen", "role": "BJC Security",       "phone": "+18145550010", "location": "BJC security office","assignments": ["BJC security", "emergency response", "police liaison"] }
+  ],
+  "itinerary": [
+    { "offsetHours": 0,  "title": "THON 2026 Kickoff",          "description": "Opening ceremonies begin. All floor captains report to command center.", "type": "milestone" },
+    { "offsetHours": 2,  "title": "First Hydration Round",      "description": "Mandatory 5-min water rotation — blocks A and C first, then B and D.", "type": "supplies" },
+    { "offsetHours": 6,  "title": "Early Morning Energy Check", "description": "Hype Squad activates — morale captain walk through all blocks.", "type": "morale" },
+    { "offsetHours": 8,  "title": "Breakfast Rotation",         "description": "Supply carts at all four blocks, 15-min rotation per block. Maya leads.", "type": "supplies" },
+    { "offsetHours": 12, "title": "Medical Check Round",        "description": "Dr. Kim and team walk all sections, check for fatigue and injuries.", "type": "medical" },
+    { "offsetHours": 16, "title": "Mail Call",                  "description": "Letters from families delivered to dancers on floor. Aisha coordinates.", "type": "morale" },
+    { "offsetHours": 23, "title": "Halfway Checkpoint",         "description": "Captain briefing at command center. All committees report status.", "type": "milestone" },
+    { "offsetHours": 30, "title": "Dinner Rotation",            "description": "Hot meals rotation across all blocks. Chris and Maya both on carts.", "type": "supplies" },
+    { "offsetHours": 38, "title": "Night Energy Push",          "description": "Hardest hours — Hype and Entertainment go full activation mode.", "type": "morale" },
+    { "offsetHours": 44, "title": "Final Push Kickoff",         "description": "Last 2 hours — all captains active, floor at full energy.", "type": "milestone" },
+    { "offsetHours": 46, "title": "THON 2026 Closing",          "description": "Grand total reveal. Final dances. Command center stands down.", "type": "milestone" }
   ],
   "dancers": [
     { "name": "Jordan Lee",      "block": "A", "section": "112", "status": "active",    "phone": "+18145550101" },
@@ -68,21 +117,26 @@
     { "name": "Elliot Anderson", "block": "D", "section": "418", "status": "available", "phone": "+18145550408" }
   ],
   "tests": [
-    { "agent": "Alex",     "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",                          "mustInclude": ["water","supplies"],       "split": "train" },
-    { "agent": "Alex",     "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",                           "mustInclude": ["medical","critical"],     "split": "train" },
-    { "agent": "Alex",     "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",                     "mustInclude": ["morale"],                 "split": "train" },
-    { "agent": "Alex",     "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",                   "mustInclude": ["supplies"],               "split": "train" },
-    { "agent": "Alex",     "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",                     "mustInclude": ["logistics"],              "split": "train" },
-    { "agent": "Alex",     "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",                     "mustInclude": ["medical"],                "split": "train" },
-    { "agent": "Alex",     "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",                      "mustInclude": ["logistics"],              "split": "train" },
-    { "agent": "Alex",     "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",                           "mustInclude": ["morale"],                 "split": "train" },
-    { "agent": "Alex",     "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",     "mustInclude": ["security"],               "split": "train" },
-    { "agent": "Alex",     "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",                                        "mustInclude": ["medical"],                "split": "train" },
-    { "agent": "Alex",     "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",                 "mustInclude": ["logistics"],              "split": "train" },
-    { "agent": "Alex",     "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",                      "mustInclude": ["supplies"],               "split": "train" },
-    { "agent": "MedAlert", "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",                     "mustInclude": ["medical","critical"],     "split": "heldout" },
-    { "agent": "MedAlert", "input": "Title: Dancer collapsed and unresponsive\n\nParticipant down in Block D section 401.",                          "mustInclude": ["medical"],                "split": "heldout" },
-    { "agent": "SwapBot",  "input": "Title: Jordan needs to sub out — section 112\n\nAvailable backup dancers: Casey Park (section 112, +18145550102)", "mustInclude": ["Casey","section"],      "split": "heldout" },
-    { "agent": "SwapBot",  "input": "Title: Blake can't continue — section 204\n\nAvailable backup dancers: Cameron Davis (section 204, +18145550202)", "mustInclude": ["Cameron","section"],    "split": "heldout" }
+    { "agent": "Alex", "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",                        "mustInclude": ["water", "supplies"],    "split": "train" },
+    { "agent": "Alex", "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",                         "mustInclude": ["medical", "critical"],  "split": "train" },
+    { "agent": "Alex", "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",                    "mustInclude": ["morale"],               "split": "train" },
+    { "agent": "Alex", "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",                  "mustInclude": ["supplies"],             "split": "train" },
+    { "agent": "Alex", "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",                    "mustInclude": ["logistics"],            "split": "train" },
+    { "agent": "Alex", "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",                    "mustInclude": ["medical"],              "split": "train" },
+    { "agent": "Alex", "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",                     "mustInclude": ["logistics"],            "split": "train" },
+    { "agent": "Alex", "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",                          "mustInclude": ["morale"],               "split": "train" },
+    { "agent": "Alex", "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",    "mustInclude": ["security"],             "split": "train" },
+    { "agent": "Alex", "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",                                       "mustInclude": ["medical"],              "split": "train" },
+    { "agent": "Alex", "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",                "mustInclude": ["logistics"],            "split": "train" },
+    { "agent": "Alex", "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",                     "mustInclude": ["supplies"],             "split": "train" },
+    { "agent": "Alex", "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",                    "mustInclude": ["medical", "critical"],  "split": "heldout" },
+    { "agent": "Alex", "input": "Title: Section 400 needs more energy snacks\n\nThey've been standing for 12 hours and supplies are gone.",     "mustInclude": ["supplies"],             "split": "heldout" },
+    { "agent": "Alex", "input": "Title: Lighting rig flickering above Block D\n\nOverhead lights unstable, dancers distracted.",                "mustInclude": ["logistics"],            "split": "heldout" },
+    { "agent": "Alex", "input": "Title: Two dancers arguing loudly\n\nConflict escalating near the west entrance.",                             "mustInclude": ["security"],             "split": "heldout" },
+    { "agent": "Alex", "input": "Title: Gatorade spilled on the dance floor\n\nSticky puddle near Block A, dancers are slipping.",               "mustInclude": ["logistics"],            "split": "heldout" },
+    { "agent": "Alex", "input": "Title: Dancer can't breathe after eating peanuts\n\nThroat swelling in Section 118, dancer is panicking.",     "mustInclude": ["medical", "critical"],  "split": "heldout" },
+    { "agent": "MedAlert", "input": "Title: Dancer collapsed and unresponsive\n\nParticipant down in Block D section 401.",                     "mustInclude": ["medical"],              "split": "heldout" },
+    { "agent": "SwapBot",  "input": "Title: Jordan needs to sub out — section 112\n\nAvailable backup dancers: Casey Park (section 112, +18145550102)", "mustInclude": ["Casey", "section"], "split": "heldout" },
+    { "agent": "SwapBot",  "input": "Title: Blake can't continue — section 204\n\nAvailable backup dancers: Cameron Davis (section 204, +18145550202)", "mustInclude": ["Cameron", "section"], "split": "heldout" }
   ]
 }

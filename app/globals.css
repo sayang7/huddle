@@ -657,7 +657,7 @@ html, body {
 
 .compose-toolbar {
   display: flex; align-items: center; gap: 2px;
-  padding: 0 10px 8px;
+  flex-wrap: wrap;
 }
 
 .compose-tag-btn {
@@ -844,3 +844,332 @@ html, body {
 .btn:hover:not(:disabled) { background: var(--accent-2); }
 .btn:disabled { opacity: 0.4; cursor: default; }
 .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+
+/* ─── Chat header right side ───────────────────────────── */
+.chat-header-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.header-live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: hazard-pulse 2s ease-in-out infinite;
+}
+
+.header-live-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── Actions banner (pending agent actions) ───────────── */
+.actions-banner {
+  background: rgba(124,101,246,0.07);
+  border-bottom: 1px solid rgba(124,101,246,0.2);
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+.actions-banner-header {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+
+.actions-banner-icon {
+  font-size: 0.85rem;
+}
+
+.actions-banner-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.actions-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.action-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 7px 10px;
+}
+
+.action-agent-badge {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.9);
+  flex-shrink: 0;
+}
+
+.action-desc {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-agent-name { color: var(--text-1); font-weight: 700; }
+.action-text       { color: var(--text-3); }
+.action-message    { color: var(--text-1); font-style: italic; }
+.action-to         { color: var(--accent); font-weight: 600; }
+
+.action-btns {
+  display: flex; gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-approve {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(43,172,118,0.4);
+  background: rgba(43,172,118,0.1);
+  color: var(--green);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+.btn-approve:hover:not(:disabled) {
+  background: rgba(43,172,118,0.2);
+  border-color: var(--green);
+}
+.btn-approve:disabled { opacity: 0.4; cursor: default; }
+
+.btn-dismiss {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.btn-dismiss:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.btn-dismiss:disabled { opacity: 0.4; cursor: default; }
+
+/* ─── Compose footer ────────────────────────────────────── */
+.compose-footer {
+  display: flex; align-items: center;
+  padding: 0 8px 8px 10px;
+  gap: 8px;
+}
+
+.compose-footer .compose-toolbar {
+  flex: 1;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.compose-name-btn {
+  width: 26px; height: 26px;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 0.62rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.compose-name-btn:hover { background: var(--accent-2); }
+
+/* ─── Panel tabs (right sidebar) ───────────────────────── */
+.panel-tabs {
+  display: flex; gap: 2px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.panel-tab {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.panel-tab:hover { background: var(--surface); color: var(--text-2); }
+.panel-tab.active { background: var(--surface); color: var(--accent); border-color: rgba(124,101,246,0.3); }
+
+/* ─── Section map ───────────────────────────────────────── */
+.section-map {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.map-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 6px 8px;
+}
+
+.map-block-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 5px;
+}
+
+.map-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.map-sec {
+  border-radius: 3px;
+  padding: 3px 5px;
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid transparent;
+  transition: background 0.1s;
+}
+
+.map-sec.ok      { background: rgba(43,172,118,0.08);  border-color: rgba(43,172,118,0.15); }
+.map-sec.has-out { background: rgba(232,68,90,0.08);   border-color: rgba(232,68,90,0.2); }
+.map-sec.empty   { background: rgba(255,255,255,0.03); border-color: var(--border); }
+
+.map-sec-num {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.map-sec-count {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.map-sec.has-out .map-sec-count { color: var(--red); }
+.map-sec.empty   .map-sec-count { color: var(--text-3); }
+
+/* ─── Contact rows ──────────────────────────────────────── */
+.contact-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.contact-row:last-of-type { border-bottom: none; }
+
+.contact-avatar {
+  width: 28px; height: 28px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.contact-role {
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.contact-location {
+  font-size: 0.62rem;
+  color: var(--text-3);
+}
+
+.contact-phone {
+  font-size: 0.6rem;
+  color: var(--text-3);
+  font-family: monospace;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* ─── Schedule: plan items ──────────────────────────────── */
+.cal-event-row.cal-plan {
+  opacity: 0.85;
+}
+
+.cal-event-left {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 2px;
+  min-width: 42px;
+}
+
+.cal-plan-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0px 3px;
+}
+
+/* ─── Sidebar nav links ─────────────────────────────────── */
+.sidebar-nav-links {
+  padding: 8px 16px 4px;
+}
+
+.sidebar-link {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.sidebar-link:hover { color: var(--accent); }

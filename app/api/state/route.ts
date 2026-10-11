@@ -12,14 +12,18 @@ function stringifyIds<T extends { _id?: unknown }>(
 export async function GET() {
   const db = await getDb();
 
-  const [cards, feed, agents, dancers, notifications, events] = await Promise.all([
-    db.collection("cards").find().sort({ createdAt: -1 }).limit(60).toArray(),
-    db.collection("feed").find().sort({ at: -1 }).limit(40).toArray(),
-    db.collection("agents").find().toArray(),
-    db.collection("dancers").find().toArray(),
-    db.collection("notifications").find().sort({ at: -1 }).limit(20).toArray(),
-    db.collection("events").find().sort({ time: 1 }).limit(20).toArray(),
-  ]);
+  const [cards, feed, agents, dancers, notifications, events, pendingActions, contacts, itinerary] =
+    await Promise.all([
+      db.collection("cards").find().sort({ createdAt: -1 }).limit(60).toArray(),
+      db.collection("feed").find().sort({ at: -1 }).limit(40).toArray(),
+      db.collection("agents").find().toArray(),
+      db.collection("dancers").find().toArray(),
+      db.collection("notifications").find().sort({ at: -1 }).limit(20).toArray(),
+      db.collection("events").find().sort({ time: 1 }).limit(20).toArray(),
+      db.collection("pendingActions").find({ status: "pending" }).sort({ createdAt: -1 }).limit(10).toArray(),
+      db.collection("contacts").find().toArray(),
+      db.collection("itinerary").find().sort({ time: 1 }).toArray(),
+    ]);
 
   return NextResponse.json({
     cards: stringifyIds(cards),
@@ -28,5 +32,8 @@ export async function GET() {
     dancers: stringifyIds(dancers),
     notifications: stringifyIds(notifications),
     events: stringifyIds(events),
+    pendingActions: stringifyIds(pendingActions),
+    contacts: stringifyIds(contacts),
+    itinerary: stringifyIds(itinerary),
   });
 }
