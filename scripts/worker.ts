@@ -67,21 +67,23 @@ async function main() {
 
           const now = new Date();
 
+          // Agent's reply appears as a plain chat message (no robot prefix)
           await db.collection("cards").insertOne({
-            title: `${agent.emoji} ${agent.name}: ${doc.title}`,
-            body: result,
+            title: result,
+            body: "",
             tag: "agent-output",
             author: agent.name,
             status: "idle",
             createdAt: now,
           });
 
+          // Mark original card as claimed by the agent
           await db
             .collection("cards")
-            .updateOne({ _id: doc._id }, { $set: { status: "idle" } });
+            .updateOne({ _id: doc._id }, { $set: { status: "claimed", claimedBy: agent.name } });
 
           await db.collection("feed").insertOne({
-            text: `${agent.emoji} ${agent.name} handled "${doc.title}"`,
+            text: `${agent.name} jumped on "${doc.title}"`,
             at: now,
           });
         } catch (err) {

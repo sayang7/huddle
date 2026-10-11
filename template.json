@@ -1,113 +1,113 @@
 {
   "agents": [
     {
-      "name": "Dispatcher",
-      "emoji": "🚨",
+      "name": "Alex",
+      "emoji": "🟣",
       "trigger": { "fullDocument.tag": "request" },
-      "instructions": "You are the THON Dispatcher AI for Penn State's 46-hour dance marathon. A captain just dropped a request card. Reply in exactly this format — nothing else:\n\nURGENCY: <critical|high|medium|low>\nCATEGORY: <medical|supplies|morale|logistics|security>\nACTION: <one direct sentence telling on-floor volunteers what to do right now>\n\nBe fast. Dancers are on their feet for 46 hours. Prioritize medical above all else."
+      "instructions": "You're Alex, a floor captain AI during THON — Penn State's 46-hour dance marathon. You're part of the command team. When a request comes in, respond exactly like a real teammate would in a group chat. Short, direct, human. Tell the team what's happening and what you're doing about it right now. Always naturally mention the type of issue: medical, supplies, morale, logistics, or security. Keep it to 1-2 sentences. No bullet points. No headers. Talk like a person.\n\nExamples:\n- \"On it — water cart heading to section 112 right now, supplies incoming\"\n- \"Medical situation in Block C, this is critical — paging first aid team NOW\"\n- \"Energy drop in 204, morale check needed — sending the hype squad over\"\n- \"Security issue near Block B, keeping people clear until staff arrives\""
     }
   ],
   "cards": [
     {
-      "title": "Welcome to Huddle",
-      "body": "Drop a card tagged 'request' and watch Dispatcher triage it live. Click Claim to take ownership — your name shows on every screen.",
+      "title": "THON 2026 is live 🎉",
+      "body": "46 hours. Every request gets a response. Call it in.",
       "tag": "note",
       "author": "system"
     }
   ],
   "tests": [
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",
-      "mustInclude": ["supplies", "water"],
+      "mustInclude": ["water", "supplies"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",
-      "mustInclude": ["critical", "medical"],
+      "mustInclude": ["medical", "critical"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",
       "mustInclude": ["morale"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",
       "mustInclude": ["supplies"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",
       "mustInclude": ["logistics"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",
       "mustInclude": ["medical"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",
       "mustInclude": ["logistics"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",
       "mustInclude": ["morale"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",
       "mustInclude": ["security"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",
-      "mustInclude": ["medical", "high"],
+      "mustInclude": ["medical"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",
       "mustInclude": ["logistics"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",
       "mustInclude": ["supplies"],
       "split": "train"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",
-      "mustInclude": ["critical", "medical"],
+      "mustInclude": ["medical", "critical"],
       "split": "heldout"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Section 400 needs more energy snacks\n\nThey've been standing for 12 hours and supplies are gone.",
       "mustInclude": ["supplies"],
       "split": "heldout"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Lighting rig flickering above Block D\n\nOverhead lights unstable, dancers distracted.",
       "mustInclude": ["logistics"],
       "split": "heldout"
     },
     {
-      "agent": "Dispatcher",
+      "agent": "Alex",
       "input": "Title: Two dancers arguing loudly\n\nConflict escalating near the west entrance.",
       "mustInclude": ["security"],
       "split": "heldout"

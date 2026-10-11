@@ -34,66 +34,48 @@ interface State {
   agents: Agent[];
 }
 
-function timeAgo(iso: string): string {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  return `${Math.floor(diff / 3600)}h ago`;
+// Deterministic avatar color from name
+const COLORS = ["#7c65f6","#e8445a","#2bac76","#e87722","#3b82f6","#ec4899","#10b981","#f59e0b"];
+function avatarColor(name: string): string {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0x7fffffff;
+  return COLORS[h % COLORS.length];
 }
-
-function parseUrgency(body: string): "critical" | "high" | "medium" | "low" | null {
-  const m = body.match(/URGENCY:\s*(critical|high|medium|low)/i);
-  return m ? (m[1].toLowerCase() as "critical" | "high" | "medium" | "low") : null;
-}
-
-function parseCategory(body: string): string | null {
-  const m = body.match(/CATEGORY:\s*(\w+)/i);
-  return m ? m[1].toLowerCase() : null;
-}
-
-function parseAction(body: string): string | null {
-  const m = body.match(/ACTION:\s*(.+)/i);
-  return m ? m[1].trim() : null;
-}
-
-function stripAgentPrefix(title: string): string {
-  const idx = title.indexOf(": ");
-  return idx !== -1 ? title.slice(idx + 2) : title;
-}
-
 function initials(name: string): string {
-  return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// card animation variants
-const cardVariants = {
-  initial: { opacity: 0, y: 10, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] } },
-  exit:    { opacity: 0, scale: 0.97, transition: { duration: 0.15 } },
-};
+function timeLabel(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
-const feedVariants = {
-  initial: { opacity: 0, x: 6 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.18 } },
-};
+// Detect urgency keywords in text for subtle tinting
+function urgencyClass(text: string): string {
+  const t = text.toLowerCase();
+  if (t.includes("critical") || t.includes("unresponsive") || t.includes("collapsed")) return "urg-critical";
+  if (t.includes("urgent") || t.includes("now") || t.includes("immediately") || t.includes("asap")) return "urg-high";
+  if (t.includes("warning") || t.includes("getting bad")) return "urg-medium";
+  return "";
+}
 
 export default function Home() {
-  const [name, setName] = useState<string>("");
+  const [myName, setMyName] = useState("");
   const [nameInput, setNameInput] = useState("");
-  const [showNameEntry, setShowNameEntry] = useState(false);
+  const [showEntry, setShowEntry] = useState(false);
   const [state, setState] = useState<State>({ cards: [], feed: [], agents: [] });
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("request");
   const [spawnDesc, setSpawnDesc] = useState("");
   const [spawning, setSpawning] = useState(false);
   const [claiming, setClaiming] = useState<string | null>(null);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const feedEndRef = useRef<HTMLDivElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("huddle-name");
-    if (!stored) setShowNameEntry(true);
-    else setName(stored);
+    if (!stored) setShowEntry(true);
+    else setMyName(stored);
   }, []);
 
   useEffect(() => {
@@ -104,53 +86,50 @@ export default function Home() {
       } catch { /* ignore */ }
     };
     poll();
-    intervalRef.current = setInterval(poll, 1000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    pollRef.current = setInterval(poll, 1000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    feedEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [state.cards.length]);
 
-  function handleNameSubmit(e: React.FormEvent) {
+  function submitName(e: React.FormEvent) {
     e.preventDefault();
     const n = nameInput.trim();
     if (!n) return;
     localStorage.setItem("huddle-name", n);
-    setName(n);
-    setShowNameEntry(false);
+    setMyName(n);
+    setShowEntry(false);
   }
 
-  const agentNames = new Set(state.agents.map((a) => a.name));
-  const agentByName = new Map(state.agents.map((a) => [a.name, a]));
+  const agentNames = new Set(state.agents.map(a => a.name));
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function submitCard(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !name.trim()) return;
+    if (!title.trim() || !myName) return;
     await fetch("/api/cards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, body: "", tag, author: name }),
+      body: JSON.stringify({ title, body: "", tag, author: myName }),
     });
     setTitle("");
     setTag("request");
   }
 
-  async function handleClaim(cardId: string) {
-    if (!name) return;
+  async function claim(cardId: string) {
+    if (!myName) return;
     setClaiming(cardId);
     try {
       await fetch(`/api/cards/${cardId}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claimedBy: name }),
+        body: JSON.stringify({ claimedBy: myName }),
       });
-    } finally {
-      setClaiming(null);
-    }
+    } finally { setClaiming(null); }
   }
 
-  async function handleSpawn(e: React.FormEvent) {
+  async function spawnAgent(e: React.FormEvent) {
     e.preventDefault();
     if (!spawnDesc.trim()) return;
     setSpawning(true);
@@ -161,31 +140,28 @@ export default function Home() {
         body: JSON.stringify({ description: spawnDesc }),
       });
       if (res.ok) setSpawnDesc("");
-      else alert(((await res.json()) as { error?: string }).error ?? "Spawn failed");
-    } finally {
-      setSpawning(false);
-    }
+      else alert(((await res.json()) as { error?: string }).error ?? "Failed");
+    } finally { setSpawning(false); }
   }
 
-  // ── Name entry screen ──────────────────────────────
-  if (showNameEntry) {
+  // ── Name entry ──────────────────────────────────────────
+  if (showEntry) {
     return (
       <div className="name-overlay">
         <motion.form
           className="name-card"
-          onSubmit={handleNameSubmit}
-          initial={{ opacity: 0, scale: 0.94, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
+          onSubmit={submitName}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="name-logo">HUDDLE</div>
-          <div className="name-subtitle">Floor Command</div>
-          <div className="name-sub2">THON 2026 · 46 hours</div>
+          <div className="name-logo">huddle<span>.</span></div>
+          <div className="name-sub">THON 2026 · Floor Command · 46 hours</div>
           <input
             className="name-input"
             placeholder="Your name"
             value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
+            onChange={e => setNameInput(e.target.value)}
             autoFocus
           />
           <motion.button
@@ -201,73 +177,78 @@ export default function Home() {
     );
   }
 
-  const sortedCards = [...state.cards].reverse();
+  // ── Build message groups ────────────────────────────────
+  // State returns newest-first; reverse for oldest-first display
+  const cards = [...state.cards].reverse();
+
+  // Build unique authors for sidebar (from cards)
+  const humanAuthors = Array.from(
+    new Set(cards.filter(c => !agentNames.has(c.author) && c.author !== "system").map(c => c.author))
+  );
+
+  // Working card IDs (agent is processing)
+  const workingCards = cards.filter(c => c.status === "working" && !agentNames.has(c.author));
 
   return (
-    <>
-      {/* ── Header ── */}
-      <header className="header">
-        <span className="header-wordmark">Huddle</span>
-        <span className="header-sep">·</span>
-        <span className="header-event">THON 2026</span>
-        <div className="header-pills">
+    <div className="app-shell">
+      {/* ── Left sidebar ── */}
+      <aside className="sidebar-left">
+        <div className="workspace-header">
+          <div className="workspace-name">
+            <span className="dot" />
+            huddle.
+          </div>
+          <div className="workspace-subtitle">THON 2026 · Floor Command</div>
+        </div>
+
+        <div className="sidebar-scroll">
+          {/* AI teammates */}
+          <div className="sidebar-section-label">AI Teammates</div>
           <AnimatePresence>
-            {state.agents.map((a) => (
-              <motion.span
-                key={a._id}
-                className="agent-pill"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+            {state.agents.map(agent => (
+              <motion.div
+                key={agent._id}
+                className="person-row is-agent"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
               >
-                {a.emoji} {a.name}
-                <span className="pill-live" />
-              </motion.span>
+                <div className="person-avatar" style={{ background: avatarColor(agent.name), borderRadius: 6 }}>
+                  {initials(agent.name)}
+                </div>
+                <span className="person-name">{agent.name}</span>
+                <span className="ai-badge">AI</span>
+                <span className="online-dot" />
+              </motion.div>
             ))}
           </AnimatePresence>
-        </div>
-        {name && <span className="header-username">{name}</span>}
-      </header>
 
-      <div className="layout">
-        {/* ── Left sidebar: teammates ── */}
-        <aside className="left-col">
-          <div>
-            <div className="section-label">On the floor</div>
-            <AnimatePresence>
-              {state.agents.map((agent) => (
-                <motion.div
-                  key={agent._id}
-                  className="agent-card-sm"
-                  style={{ marginBottom: 8 }}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                >
-                  <div className="agent-card-sm-header">
-                    <span style={{ fontSize: "1rem" }}>{agent.emoji}</span>
-                    <span className="agent-card-sm-name">{agent.name}</span>
-                    <span className="agent-live-badge">
-                      <span className="agent-live-dot" /> live
-                    </span>
+          {/* Human captains */}
+          {humanAuthors.length > 0 && (
+            <>
+              <div className="sidebar-section-label" style={{ marginTop: 12 }}>Captains</div>
+              {humanAuthors.map(name => (
+                <div key={name} className="person-row">
+                  <div className="person-avatar" style={{ background: avatarColor(name) }}>
+                    {initials(name)}
                   </div>
-                  <div className="agent-card-sm-trigger">
-                    reacts to: {String(agent.trigger["fullDocument.tag"] ?? "all cards")}
-                  </div>
-                </motion.div>
+                  <span className="person-name">{name}</span>
+                  <span className="online-dot" />
+                </div>
               ))}
-            </AnimatePresence>
-          </div>
+            </>
+          )}
 
-          <div>
-            <div className="section-label">Add teammate</div>
-            <form className="spawn-form" onSubmit={handleSpawn}>
+          {/* Spawn new agent */}
+          <div className="spawn-section" style={{ marginTop: 16 }}>
+            <div className="spawn-label">Add AI Teammate</div>
+            <form className="spawn-form" onSubmit={spawnAgent}>
               <textarea
                 className="spawn-input"
                 rows={3}
-                placeholder="e.g. Flag anything mentioning heat or exhaustion"
+                placeholder="e.g. Flag anything mentioning heat exhaustion"
                 value={spawnDesc}
-                onChange={(e) => setSpawnDesc(e.target.value)}
+                onChange={e => setSpawnDesc(e.target.value)}
                 disabled={spawning}
               />
               <motion.button
@@ -277,98 +258,90 @@ export default function Home() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
               >
-                {spawning ? "Creating…" : "Add"}
+                {spawning ? "Creating…" : "Add teammate"}
               </motion.button>
             </form>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        {/* ── Center: floor feed ── */}
-        <main className="chat-col">
-          <div className="chat-feed">
-            <AnimatePresence initial={false}>
-              {sortedCards.map((card) => {
-                const isAgent = agentNames.has(card.author);
-                const agent = isAgent ? agentByName.get(card.author) : undefined;
-                const isWorking = card.status === "working";
-                const isClaimed = card.status === "claimed";
-                const canClaim = !isAgent && !isClaimed && !isWorking;
+      {/* ── Main chat ── */}
+      <div className="chat-area">
+        <div className="chat-header">
+          <span className="chat-header-hash">#</span>
+          <span className="chat-header-name">floor</span>
+          <span className="chat-header-desc">— every request gets a response</span>
+        </div>
 
-                const urgency = isAgent ? parseUrgency(card.body) : null;
-                const category = isAgent ? parseCategory(card.body) : null;
-                const action = isAgent ? parseAction(card.body) : null;
-                const displayTitle = isAgent ? stripAgentPrefix(card.title) : card.title;
+        <div className="msg-feed">
+          <div className="date-divider">
+            <span className="date-label">THON 2026 · Today</span>
+          </div>
 
-                const cardClass = [
-                  "floor-card",
-                  isAgent ? "card-agent" : "",
-                  isClaimed ? "card-claimed" : "",
-                  isWorking ? "card-working" : "",
-                  urgency ? `u-${urgency}` : (!isAgent ? "u-default" : ""),
-                ].filter(Boolean).join(" ");
+          <AnimatePresence initial={false}>
+            {cards.map((card, i) => {
+              const isAgent = agentNames.has(card.author);
+              const isSystem = card.author === "system";
+              const isClaimed = card.status === "claimed";
+              const isWorking = card.status === "working";
+              const canClaim = !isAgent && !isSystem && !isClaimed && !isWorking;
 
+              const prev = i > 0 ? cards[i - 1] : null;
+              const sameAuthor = prev?.author === card.author &&
+                (new Date(card.createdAt).getTime() - new Date(prev.createdAt).getTime()) < 5 * 60 * 1000;
+
+              const urgClass = isAgent ? urgencyClass(card.title) : "";
+
+              if (isSystem) {
                 return (
                   <motion.div
                     key={card._id}
-                    className={cardClass}
-                    variants={cardVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    layout
+                    className="sys-msg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                   >
-                    {/* header row */}
-                    <div className="card-header">
-                      {isAgent && agent ? (
-                        <div className="card-avatar av-agent">{agent.emoji}</div>
-                      ) : (
-                        <div className="card-avatar">{initials(card.author)}</div>
-                      )}
-                      <span className={`card-author${isAgent ? " is-agent" : ""}`}>
-                        {card.author}
-                      </span>
-                      <div className="card-badges">
-                        {!isAgent && card.tag && (
-                          <span className="badge badge-tag">{card.tag}</span>
-                        )}
-                        {urgency && (
-                          <span className={`badge badge-${urgency}`}>{urgency.toUpperCase()}</span>
-                        )}
-                        {category && (
-                          <span className="badge badge-category">{category}</span>
-                        )}
-                      </div>
-                      <span className="card-time">{timeAgo(card.createdAt)}</span>
+                    {card.title}
+                  </motion.div>
+                );
+              }
+
+              return (
+                <motion.div
+                  key={card._id}
+                  className={`msg-group ${sameAuthor ? "continued" : ""} ${urgClass}`}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  layout
+                >
+                  {sameAuthor && (
+                    <span className="msg-side-time">{timeLabel(card.createdAt)}</span>
+                  )}
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <div
+                      className="msg-avatar"
+                      style={{ background: avatarColor(card.author) }}
+                    >
+                      {initials(card.author)}
                     </div>
-
-                    {/* title */}
-                    <div className="card-title">{displayTitle}</div>
-
-                    {/* body */}
-                    {isAgent && action ? (
-                      <div className="card-action">{action}</div>
-                    ) : card.body ? (
-                      <div className="card-body-text">{card.body}</div>
-                    ) : null}
-
-                    {/* triaging animation */}
-                    {isWorking && !isAgent && (
-                      <div className="triaging-indicator">
-                        <span className="triaging-dots">
-                          <span /><span /><span />
-                        </span>
-                        Dispatcher is triaging
-                      </div>
-                    )}
-
-                    {/* footer */}
-                    {(canClaim || isClaimed) && (
-                      <div className="card-footer">
+                    <div className="msg-content-col">
+                      {!sameAuthor && (
+                        <div className="msg-author-row">
+                          <span className="msg-author">{card.author}</span>
+                          {isAgent && <span className="ai-badge">AI</span>}
+                          <span className="msg-time">{timeLabel(card.createdAt)}</span>
+                        </div>
+                      )}
+                      <div className="msg-text">{card.title}</div>
+                      <div className="msg-footer">
+                        {!isAgent && !isSystem && card.tag && (
+                          <span className="msg-tag">{card.tag}</span>
+                        )}
                         {isClaimed && card.claimedBy && (
                           <motion.span
-                            className="badge badge-claimed"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            className="claimed-line"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                           >
                             ✓ {card.claimedBy} is on it
                           </motion.span>
@@ -377,73 +350,98 @@ export default function Home() {
                           <motion.button
                             className="btn-claim"
                             disabled={claiming === card._id}
-                            onClick={() => handleClaim(card._id)}
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.95 }}
+                            onClick={() => claim(card._id)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.94 }}
                           >
                             {claiming === card._id ? "…" : "I'm on it"}
                           </motion.button>
                         )}
                       </div>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-            <div ref={chatEndRef} />
-          </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
 
-          {/* input bar */}
-          <form className="chat-input-bar" onSubmit={handleSubmit}>
-            <select
-              className="tag-select"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-            >
-              <option value="request">request</option>
-              <option value="medical">medical</option>
-              <option value="supplies">supplies</option>
-              <option value="logistics">logistics</option>
-              <option value="morale">morale</option>
-              <option value="security">security</option>
-              <option value="note">note</option>
-            </select>
+          {/* Typing indicator when agent is processing */}
+          <AnimatePresence>
+            {workingCards.length > 0 && state.agents.length > 0 && (
+              <motion.div
+                className="typing-row"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+              >
+                <div
+                  className="typing-avatar"
+                  style={{ background: avatarColor(state.agents[0].name) }}
+                >
+                  {initials(state.agents[0].name)}
+                </div>
+                <div className="typing-bubble">
+                  <span /><span /><span />
+                </div>
+                <span className="typing-label">{state.agents[0].name} is responding…</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div ref={feedEndRef} />
+        </div>
+
+        {/* Compose bar */}
+        <form className="compose-bar" onSubmit={submitCard}>
+          <div className="compose-top">
             <input
-              className="chat-text-input"
-              placeholder="What's happening on the floor?"
+              className="compose-input"
+              placeholder={`What's happening on the floor, ${myName}?`}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               required
             />
             <motion.button
               type="submit"
-              className="btn"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.96 }}
+              className="compose-send"
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.92 }}
             >
-              Call it in
+              ↑
             </motion.button>
-          </form>
-        </main>
-
-        {/* ── Right sidebar: activity ── */}
-        <aside className="right-col">
-          <div className="section-label">Activity</div>
-          <AnimatePresence initial={false}>
-            {state.feed.map((item) => (
-              <motion.div
-                key={item._id}
-                className="feed-row"
-                variants={feedVariants}
-                initial="initial"
-                animate="animate"
+          </div>
+          <div className="compose-toolbar">
+            {["request","medical","supplies","logistics","morale","security","note"].map(t => (
+              <button
+                key={t}
+                type="button"
+                className={`compose-tag-btn${tag === t ? " active" : ""}`}
+                onClick={() => setTag(t)}
               >
-                {item.text}
-              </motion.div>
+                {t}
+              </button>
             ))}
-          </AnimatePresence>
-        </aside>
+          </div>
+        </form>
       </div>
-    </>
+
+      {/* ── Right sidebar: activity ── */}
+      <aside className="sidebar-right">
+        <div className="sidebar-section-label">Activity</div>
+        <AnimatePresence initial={false}>
+          {state.feed.map(item => (
+            <motion.div
+              key={item._id}
+              className="activity-row"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              {item.text}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </aside>
+    </div>
   );
 }
