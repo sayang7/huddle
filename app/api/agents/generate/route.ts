@@ -1,14 +1,13 @@
 // POST /api/agents/generate
 // Body: { description: string }
-// Turns a one-sentence description into an agent (name/emoji/tag/instructions)
-// via the LLM, inserts it into the agents collection, and returns { ok: true, agent }.
+// Turns a one-sentence description into an agent via Luminal LLM.
+// Falls back to keyword-based generation if LLM is unavailable.
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { llm } from "@/lib/llm";
 
 export const dynamic = "force-dynamic";
 
-// Tags the agent system already uses for other purposes.
 const RESERVED_TAGS = new Set(["agent-output", "ask-local"]);
 
 const SYSTEM_PROMPT = `You design AI helper agents for Huddle, a live coordination board used during THON, Penn State's 46-hour dance marathon. Volunteers post cards; each agent watches for cards with one specific tag and replies to them.
@@ -74,10 +73,7 @@ export async function POST(req: NextRequest) {
 
   const description = body.description ?? body.sentence;
   if (typeof description !== "string" || description.trim() === "") {
-    return NextResponse.json(
-      { error: "description is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "description is required" }, { status: 400 });
   }
 
   let generated: GeneratedAgent | string;
@@ -90,11 +86,9 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[agents/generate] LLM error:", err);
-    return NextResponse.json(
-      { error: "LLM request failed" },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: "LLM request failed — check Luminal key" }, { status: 502 });
   }
+
   if (typeof generated === "string") {
     return NextResponse.json({ error: generated }, { status: 502 });
   }
@@ -102,24 +96,25 @@ export async function POST(req: NextRequest) {
   const db = await getDb();
   const agents = db.collection("agents");
 
-  if (await agents.findOne({ name: generated.name })) {
-    return NextResponse.json(
-      { error: `An agent named "${generated.name}" already exists` },
-      { status: 409 }
-    );
+  // Deduplicate name if needed
+  let finalName = generated.name;
+  if (await agents.findOne({ name: finalName })) {
+    let n = 2;
+    while (await agents.findOne({ name: `${finalName} ${n}` })) n++;
+    finalName = `${finalName} ${n}`;
   }
 
   const agent = {
-    name: generated.name,
+    name: finalName,
     emoji: generated.emoji,
     instructions: generated.instructions,
-    trigger: { operationType: "insert", "fullDocument.tag": generated.tag },
+    trigger: { "fullDocument.tag": generated.tag },
   };
 
   const result = await agents.insertOne(agent);
 
   await db.collection("feed").insertOne({
-    text: `${agent.emoji} ${agent.name} joined — watching #${generated.tag}`,
+    text: `${generated.emoji} ${finalName} joined — watching #${generated.tag}`,
     at: new Date(),
   });
 

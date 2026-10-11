@@ -16,6 +16,7 @@ async function callLlm(system: string, user: string): Promise<Response> {
         { role: "user", content: user },
       ],
       temperature: 0.7,
+      max_tokens: 400,
     }),
   });
 }
@@ -36,8 +37,10 @@ export async function llm(system: string, user: string): Promise<string> {
   }
 
   const data = (await res.json()) as {
-    choices: { message: { content: string } }[];
+    choices: { message: { content: string; reasoning_content?: string } }[];
   };
-  const raw = data.choices[0].message.content;
+  // DeepSeek reasoning models put the answer in content;
+  // reasoning_content is the chain-of-thought (we discard it)
+  const raw = data.choices[0].message.content ?? "";
   return raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 }

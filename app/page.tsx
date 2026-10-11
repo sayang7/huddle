@@ -87,6 +87,7 @@ export default function Home() {
   const [tag, setTag] = useState("request");
   const [spawnDesc, setSpawnDesc] = useState("");
   const [spawning, setSpawning] = useState(false);
+  const [spawnError, setSpawnError] = useState("");
   const [claiming, setClaiming] = useState<string | null>(null);
   const feedEndRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -106,7 +107,9 @@ export default function Home() {
     };
     poll();
     pollRef.current = setInterval(poll, 1000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    // Safety: never hang on splash longer than 3s
+    const t = setTimeout(() => setLoading(false), 3000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); clearTimeout(t); };
   }, []);
 
   useEffect(() => {
@@ -157,15 +160,17 @@ export default function Home() {
     e.preventDefault();
     if (!spawnDesc.trim()) return;
     setSpawning(true);
+    setSpawnError("");
     try {
       const res = await fetch("/api/agents/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: spawnDesc }),
       });
-      if (res.ok) setSpawnDesc("");
-      else alert(((await res.json()) as { error?: string }).error ?? "Failed");
-    } finally { setSpawning(false); }
+      if (res.ok) { setSpawnDesc(""); }
+      else { const j = await res.json() as { error?: string }; setSpawnError(j.error ?? "Failed"); }
+    } catch { setSpawnError("Network error"); }
+    finally { setSpawning(false); }
   }
 
   // ── Loading splash ──────────────────────────────────────
@@ -304,6 +309,7 @@ export default function Home() {
                 onChange={e => setSpawnDesc(e.target.value)}
                 disabled={spawning}
               />
+              {spawnError && <div className="spawn-error">{spawnError}</div>}
               <motion.button
                 type="submit"
                 className="btn btn-sm"
@@ -463,7 +469,7 @@ export default function Home() {
           <div className="compose-top">
             <input
               className="compose-input"
-              placeholder={`What's happening on the floor, ${myName}?`}
+              placeholder={`What's happening on the floor, ${myName}? (tip: @Alex to ping directly)`}
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
