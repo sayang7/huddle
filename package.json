@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
     "worker": "tsx scripts/worker.ts",
-    "evolve": "tsx scripts/evolve.ts"
+    "evolve": "tsx scripts/evolve.ts",
+    "local-agent": "tsx scripts/local-agent.ts"
   },
   "dependencies": {
     "dotenv": "^18.0.7",
