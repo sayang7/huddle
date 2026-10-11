@@ -457,7 +457,8 @@ export default function Home() {
               const isSystem = card.author === "system";
               const isClaimed = card.status === "claimed";
               const isWorking = card.status === "working";
-              const canClaim = !isAgent && !isSystem && !isClaimed && !isWorking;
+              // Agents auto-claim human cards, so captains claim the agent's dispatch card
+              const canClaim = !isSystem && !isClaimed && !isWorking;
 
               const prev = i > 0 ? cards[i - 1] : null;
               const sameAuthor = prev?.author === card.author &&
