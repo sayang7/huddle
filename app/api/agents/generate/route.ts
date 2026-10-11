@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     name: finalName,
     emoji: generated.emoji,
     instructions: generated.instructions,
-    trigger: { "fullDocument.tag": generated.tag },
+    trigger: { operationType: "insert", "fullDocument.tag": generated.tag },
   };
 
   const result = await agents.insertOne(agent);
