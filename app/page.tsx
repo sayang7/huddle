@@ -186,6 +186,14 @@ export default function Home() {
 
   const agentNames = new Set(state.agents.map(a => a.name));
 
+  // One tag button per agent trigger, so a newly spawned agent's tag shows up too
+  const agentTags = state.agents
+    .map(a => a.trigger?.["fullDocument.tag"])
+    .filter((t): t is string => typeof t === "string" && t !== "request");
+  const tagButtons = agentTags.length
+    ? ["request", ...new Set(agentTags)]
+    : ["request","medical","substitute","supplies","logistics","morale","security","schedule","outreach"];
+
   async function submitCard(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !myName) return;
@@ -575,7 +583,7 @@ export default function Home() {
             </motion.button>
           </div>
           <div className="compose-toolbar">
-            {["request","medical","substitute","supplies","logistics","morale","security","schedule","outreach"].map(t => (
+            {tagButtons.map(t => (
               <button
                 key={t}
                 type="button"
