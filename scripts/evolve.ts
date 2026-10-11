@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 config({ path: ".env.local" });
 
+import { writeFileSync } from "node:fs";
 import { getDb, closeDb } from "../lib/db";
 import { llm } from "../lib/llm";
 
@@ -16,7 +17,9 @@ interface AgentDoc {
   instructions: string;
 }
 
-const CONCURRENCY = 6;
+// Luminal starts returning 429 around 16 parallel calls; candidates are
+// scored 2 at a time with 2 calls each, so at most 4 run at once.
+const CONCURRENCY = 2;
 
 async function runWithConcurrency<T, R>(
   items: T[],
@@ -98,6 +101,7 @@ async function main() {
   );
 
   let bestTrainScore = baselineTrain.passed;
+  const rounds: { round: number; best: number; total: number; improved: boolean }[] = [];
 
   for (let round = 1; round <= 5; round++) {
     // Find failing train tests
@@ -146,7 +150,10 @@ async function main() {
       b.passed > a.passed ? b : a
     );
 
-    if (best.passed > bestTrainScore) {
+    const improved = best.passed > bestTrainScore;
+    rounds.push({ round, best: Math.max(best.passed, bestTrainScore), total: trainTests.length, improved });
+
+    if (improved) {
       bestTrainScore = best.passed;
       bestInstructions = best.instructions;
       console.log(
@@ -171,6 +178,33 @@ async function main() {
     .updateOne({ name: agentName }, { $set: { instructions: bestInstructions } });
 
   console.log(`\nSaved improved instructions to agent "${agentName}"`);
+
+  // Results for the /evolve page
+  writeFileSync(
+    "evolve-results.json",
+    JSON.stringify(
+      {
+        agent: agentName,
+        model: process.env.LLM_MODEL,
+        ranAt: new Date().toISOString(),
+        candidatesPerRound: 4,
+        baseline: {
+          train: [baselineTrain.passed, baselineTrain.total],
+          heldout: [baselineHeldout.passed, baselineHeldout.total],
+        },
+        rounds,
+        final: {
+          train: [bestTrainScore, trainTests.length],
+          heldout: [finalHeldout.passed, finalHeldout.total],
+        },
+        baselineInstructions: agent.instructions,
+        bestInstructions,
+      },
+      null,
+      2
+    )
+  );
+  console.log("Wrote evolve-results.json");
 
   await closeDb();
   process.exit(0);
