@@ -4,120 +4,85 @@
       "name": "Alex",
       "emoji": "🟣",
       "trigger": { "fullDocument.tag": "request" },
-      "instructions": "You're Alex, a floor captain AI during THON — Penn State's 46-hour dance marathon. You're part of the command team. When a request comes in, respond exactly like a real teammate would in a group chat. Short, direct, human. Tell the team what's happening and what you're doing about it right now. Always naturally mention the type of issue: medical, supplies, morale, logistics, or security. Keep it to 1-2 sentences. No bullet points. No headers. Talk like a person.\n\nExamples:\n- \"On it — water cart heading to section 112 right now, supplies incoming\"\n- \"Medical situation in Block C, this is critical — paging first aid team NOW\"\n- \"Energy drop in 204, morale check needed — sending the hype squad over\"\n- \"Security issue near Block B, keeping people clear until staff arrives\""
+      "instructions": "You're Alex, floor captain AI during THON — Penn State's 46-hour dance marathon. When a request comes in, respond exactly like a real teammate in a group chat. Short, direct, human. Tell the team what's happening and what you're doing RIGHT NOW. Naturally mention the issue type: medical, supplies, morale, logistics, or security. 1-2 sentences. No bullet points. No headers. Talk like a person.\n\nExamples:\n- \"On it — water cart heading to section 112 right now, supplies incoming\"\n- \"Medical situation in Block C, this is critical — paging first aid team NOW\"\n- \"Energy drop in 204, morale check needed — sending the hype squad over\"\n- \"Security issue near Block B, keeping people clear until staff arrives\""
+    },
+    {
+      "name": "MedAlert",
+      "emoji": "🏥",
+      "trigger": { "fullDocument.tag": "medical" },
+      "instructions": "You're MedAlert, medical response coordinator at THON — Penn State's 46-hour dance marathon. When a medical card comes in, respond with urgency and specificity. Always say 'medical' in your response, indicate severity (critical/moderate/minor), state exactly what action you're taking right now. 1-2 sentences, no bullet points, talk like a real first responder on comms."
+    },
+    {
+      "name": "SwapBot",
+      "emoji": "🔄",
+      "trigger": { "fullDocument.tag": "substitute" },
+      "instructions": "You're SwapBot, dancer roster coordinator at THON — Penn State's 46-hour dance marathon. When a dancer needs to be substituted, pull from the reserve list and coordinate the swap. Respond with the specific backup dancer's name and their section. Confirm they're being notified and are on their way. Keep it 1-2 sentences, direct and confident. Use the backup dancer info provided in the context if available."
     }
   ],
   "cards": [
     {
-      "title": "THON 2026 is live 🎉",
-      "body": "46 hours. Every request gets a response. Call it in.",
+      "title": "THON 2026 — 46 hours starts now. Command center is live.",
+      "body": "Every request gets a response. Post your situation and tag it.",
       "tag": "note",
       "author": "system"
     },
     {
-      "title": "Hey everyone, Alex here. I'm monitoring the floor all 46 hours — drop a request and I'll jump on it. Tag it 'request' and I'll triage it immediately.",
+      "title": "Hey everyone, Alex here. I'm on the floor all 46 hours — medical, supplies, morale, logistics, security. Tag your request and I'll jump on it.",
       "body": "",
       "tag": "agent-output",
-      "author": "Alex",
-      "status": "idle"
+      "author": "Alex"
     }
   ],
+  "dancers": [
+    { "name": "Jordan Lee",      "block": "A", "section": "112", "status": "active",    "phone": "+18145550101" },
+    { "name": "Casey Park",      "block": "A", "section": "112", "status": "available", "phone": "+18145550102" },
+    { "name": "Riley Chen",      "block": "A", "section": "115", "status": "active",    "phone": "+18145550103" },
+    { "name": "Morgan Taylor",   "block": "A", "section": "115", "status": "available", "phone": "+18145550104" },
+    { "name": "Avery Kim",       "block": "A", "section": "120", "status": "active",    "phone": "+18145550105" },
+    { "name": "Sam Rivera",      "block": "A", "section": "120", "status": "available", "phone": "+18145550106" },
+    { "name": "Quinn Johnson",   "block": "A", "section": "125", "status": "active",    "phone": "+18145550107" },
+    { "name": "Drew Martinez",   "block": "A", "section": "125", "status": "available", "phone": "+18145550108" },
+    { "name": "Blake Williams",  "block": "B", "section": "204", "status": "active",    "phone": "+18145550201" },
+    { "name": "Cameron Davis",   "block": "B", "section": "204", "status": "available", "phone": "+18145550202" },
+    { "name": "Taylor Brown",    "block": "B", "section": "208", "status": "active",    "phone": "+18145550203" },
+    { "name": "Alex Garcia",     "block": "B", "section": "208", "status": "available", "phone": "+18145550204" },
+    { "name": "Jordan Thompson", "block": "B", "section": "213", "status": "active",    "phone": "+18145550205" },
+    { "name": "Jamie Robinson",  "block": "B", "section": "213", "status": "available", "phone": "+18145550206" },
+    { "name": "Morgan White",    "block": "B", "section": "218", "status": "active",    "phone": "+18145550207" },
+    { "name": "Dylan Harris",    "block": "B", "section": "218", "status": "available", "phone": "+18145550208" },
+    { "name": "Skyler Jackson",  "block": "C", "section": "301", "status": "active",    "phone": "+18145550301" },
+    { "name": "River Clark",     "block": "C", "section": "301", "status": "available", "phone": "+18145550302" },
+    { "name": "Kai Moore",       "block": "C", "section": "306", "status": "active",    "phone": "+18145550303" },
+    { "name": "Finley Anderson", "block": "C", "section": "306", "status": "available", "phone": "+18145550304" },
+    { "name": "Remi Wilson",     "block": "C", "section": "311", "status": "active",    "phone": "+18145550305" },
+    { "name": "Sage Thomas",     "block": "C", "section": "311", "status": "available", "phone": "+18145550306" },
+    { "name": "Jules Martinez",  "block": "C", "section": "316", "status": "active",    "phone": "+18145550307" },
+    { "name": "Oakley Brooks",   "block": "C", "section": "316", "status": "available", "phone": "+18145550308" },
+    { "name": "Devon Taylor",    "block": "D", "section": "401", "status": "active",    "phone": "+18145550401" },
+    { "name": "Rowan Brown",     "block": "D", "section": "401", "status": "available", "phone": "+18145550402" },
+    { "name": "Emery Davis",     "block": "D", "section": "407", "status": "active",    "phone": "+18145550403" },
+    { "name": "Hollis White",    "block": "D", "section": "407", "status": "available", "phone": "+18145550404" },
+    { "name": "Kendall Moore",   "block": "D", "section": "412", "status": "active",    "phone": "+18145550405" },
+    { "name": "Aspen Clark",     "block": "D", "section": "412", "status": "available", "phone": "+18145550406" },
+    { "name": "Reese Wilson",    "block": "D", "section": "418", "status": "active",    "phone": "+18145550407" },
+    { "name": "Elliot Anderson", "block": "D", "section": "418", "status": "available", "phone": "+18145550408" }
+  ],
   "tests": [
-    {
-      "agent": "Alex",
-      "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",
-      "mustInclude": ["water", "supplies"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",
-      "mustInclude": ["medical", "critical"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",
-      "mustInclude": ["morale"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",
-      "mustInclude": ["supplies"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",
-      "mustInclude": ["logistics"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",
-      "mustInclude": ["medical"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",
-      "mustInclude": ["logistics"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",
-      "mustInclude": ["morale"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",
-      "mustInclude": ["security"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",
-      "mustInclude": ["medical"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",
-      "mustInclude": ["logistics"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",
-      "mustInclude": ["supplies"],
-      "split": "train"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",
-      "mustInclude": ["medical", "critical"],
-      "split": "heldout"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Section 400 needs more energy snacks\n\nThey've been standing for 12 hours and supplies are gone.",
-      "mustInclude": ["supplies"],
-      "split": "heldout"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Lighting rig flickering above Block D\n\nOverhead lights unstable, dancers distracted.",
-      "mustInclude": ["logistics"],
-      "split": "heldout"
-    },
-    {
-      "agent": "Alex",
-      "input": "Title: Two dancers arguing loudly\n\nConflict escalating near the west entrance.",
-      "mustInclude": ["security"],
-      "split": "heldout"
-    }
+    { "agent": "Alex",     "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",                          "mustInclude": ["water","supplies"],       "split": "train" },
+    { "agent": "Alex",     "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",                           "mustInclude": ["medical","critical"],     "split": "train" },
+    { "agent": "Alex",     "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",                     "mustInclude": ["morale"],                 "split": "train" },
+    { "agent": "Alex",     "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",                   "mustInclude": ["supplies"],               "split": "train" },
+    { "agent": "Alex",     "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",                     "mustInclude": ["logistics"],              "split": "train" },
+    { "agent": "Alex",     "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",                     "mustInclude": ["medical"],                "split": "train" },
+    { "agent": "Alex",     "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",                      "mustInclude": ["logistics"],              "split": "train" },
+    { "agent": "Alex",     "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",                           "mustInclude": ["morale"],                 "split": "train" },
+    { "agent": "Alex",     "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",     "mustInclude": ["security"],               "split": "train" },
+    { "agent": "Alex",     "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",                                        "mustInclude": ["medical"],                "split": "train" },
+    { "agent": "Alex",     "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",                 "mustInclude": ["logistics"],              "split": "train" },
+    { "agent": "Alex",     "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",                      "mustInclude": ["supplies"],               "split": "train" },
+    { "agent": "MedAlert", "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",                     "mustInclude": ["medical","critical"],     "split": "heldout" },
+    { "agent": "MedAlert", "input": "Title: Dancer collapsed and unresponsive\n\nParticipant down in Block D section 401.",                          "mustInclude": ["medical"],                "split": "heldout" },
+    { "agent": "SwapBot",  "input": "Title: Jordan needs to sub out — section 112\n\nAvailable backup dancers: Casey Park (section 112, +18145550102)", "mustInclude": ["Casey","section"],      "split": "heldout" },
+    { "agent": "SwapBot",  "input": "Title: Blake can't continue — section 204\n\nAvailable backup dancers: Cameron Davis (section 204, +18145550202)", "mustInclude": ["Cameron","section"],    "split": "heldout" }
   ]
 }

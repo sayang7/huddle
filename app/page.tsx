@@ -28,10 +28,38 @@ interface Agent {
   trigger: Record<string, unknown>;
 }
 
+interface Dancer {
+  _id: string;
+  name: string;
+  block: string;
+  section: string;
+  status: "active" | "available" | "out";
+  phone?: string;
+}
+
+interface Notification {
+  _id: string;
+  to: string;
+  phone: string | null;
+  message: string;
+  agentName: string;
+  at: string;
+}
+
+interface CalEvent {
+  _id: string;
+  title: string;
+  time: string;
+  createdBy: string;
+}
+
 interface State {
   cards: Card[];
   feed: FeedItem[];
   agents: Agent[];
+  dancers: Dancer[];
+  notifications: Notification[];
+  events: CalEvent[];
 }
 
 // Deterministic avatar color from name
@@ -110,7 +138,10 @@ export default function Home() {
   const [nameInput, setNameInput] = useState("");
   const [showEntry, setShowEntry] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [state, setState] = useState<State>({ cards: [], feed: [], agents: [] });
+  const [state, setState] = useState<State>({ cards: [], feed: [], agents: [], dancers: [], notifications: [], events: [] });
+  const [showCalForm, setShowCalForm] = useState(false);
+  const [calTitle, setCalTitle] = useState("");
+  const [calTime, setCalTime] = useState("");
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("request");
   const [spawnDesc, setSpawnDesc] = useState("");
@@ -158,7 +189,7 @@ export default function Home() {
   async function submitCard(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !myName) return;
-    // If message @mentions an agent name, treat as a direct request
+    // @mention → force request tag
     const mentionedAgent = state.agents.find(a =>
       title.toLowerCase().includes(`@${a.name.toLowerCase()}`)
     );
@@ -168,8 +199,29 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, body: "", tag: effectiveTag, author: myName }),
     });
+    // If tagged as schedule, also create a calendar event
+    if (effectiveTag === "schedule") {
+      await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, time: new Date().toISOString(), createdBy: myName }),
+      });
+    }
     setTitle("");
     setTag("request");
+  }
+
+  async function addCalendarEvent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!calTitle.trim()) return;
+    await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: calTitle, time: calTime || new Date().toISOString(), createdBy: myName }),
+    });
+    setCalTitle("");
+    setCalTime("");
+    setShowCalForm(false);
   }
 
   async function claim(cardId: string) {
@@ -270,7 +322,7 @@ export default function Home() {
     workingCards.some(() => true) // any working card = show first available agent typing
   );
 
-  // Substitution cards (dancer swap events from teammate C's backend)
+  // Substitution cards
   const subCards = cards.filter(c => c.tag === "substitute");
 
   // Open critical/hazard cards (unclaimed, high urgency)
@@ -278,6 +330,14 @@ export default function Home() {
     !agentNames.has(c.author) && c.author !== "system" &&
     c.status !== "claimed" && urgencyClass(c.title) === "urg-critical"
   );
+
+  // Dancer roster grouped by block
+  const rosterByBlock = ["A", "B", "C", "D"].map(block => ({
+    block,
+    active: state.dancers.filter(d => d.block === block && d.status === "active"),
+    available: state.dancers.filter(d => d.block === block && d.status === "available"),
+    out: state.dancers.filter(d => d.block === block && d.status === "out"),
+  }));
 
   return (
     <div className="app-shell">
@@ -500,7 +560,7 @@ export default function Home() {
           <div className="compose-top">
             <input
               className="compose-input"
-              placeholder={`What's happening on the floor, ${myName}? (tip: @Alex to ping directly)`}
+              placeholder={`Message the floor, ${myName}… try @Alex, or pick a tag below`}
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
@@ -515,7 +575,7 @@ export default function Home() {
             </motion.button>
           </div>
           <div className="compose-toolbar">
-            {["request","medical","supplies","logistics","morale","security","note"].map(t => (
+            {["request","medical","substitute","supplies","logistics","morale","security","schedule"].map(t => (
               <button
                 key={t}
                 type="button"
@@ -529,31 +589,121 @@ export default function Home() {
         </form>
       </div>
 
-      {/* ── Right sidebar: substitutions + activity ── */}
+      {/* ── Right sidebar: roster + notifications + activity ── */}
       <aside className="sidebar-right">
 
-        {/* Dancer substitutions (teammate C feeds this via tag="substitute") */}
-        <div className="sidebar-section-label">Substitutions</div>
-        <AnimatePresence>
-          {subCards.length === 0 ? (
-            <div className="sub-empty">No swaps yet</div>
-          ) : (
-            subCards.map(c => (
-              <motion.div
-                key={c._id}
-                className="sub-row"
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
+        {/* Floor Roster */}
+        <div className="sidebar-section-label">Floor Roster</div>
+        {state.dancers.length === 0 ? (
+          <div className="sub-empty">Loading roster…</div>
+        ) : (
+          rosterByBlock.map(({ block, active, available, out }) => (
+            <div key={block} className="roster-block">
+              <div className="roster-block-header">
+                <span className="roster-block-name">Block {block}</span>
+                <span className="roster-counts">
+                  <span className="roster-active">{active.length}</span>
+                  <span className="roster-sep">/</span>
+                  <span className="roster-avail">{available.length} backup</span>
+                  {out.length > 0 && <span className="roster-out">{out.length} out</span>}
+                </span>
+              </div>
+              <AnimatePresence>
+                {out.map(d => (
+                  <motion.div key={d._id} className="roster-dancer out"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <span className="roster-status-dot out" />
+                    <span className="roster-name">{d.name}</span>
+                    <span className="roster-section">§{d.section}</span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          ))
+        )}
+
+        {/* Recent notifications from agents */}
+        {state.notifications.length > 0 && (
+          <>
+            <div className="sidebar-section-label" style={{ marginTop: 14 }}>Notifications Sent</div>
+            <AnimatePresence initial={false}>
+              {state.notifications.map(n => (
+                <motion.div key={n._id} className="notif-row"
+                  initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
+                  <span className="notif-icon">📱</span>
+                  <div className="notif-body">
+                    <div className="notif-to">{n.to}{n.phone ? ` · ${n.phone}` : ""}</div>
+                    <div className="notif-msg">{n.message}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </>
+        )}
+
+        {/* Substitutions */}
+        {subCards.length > 0 && (
+          <>
+            <div className="sidebar-section-label" style={{ marginTop: 14 }}>Swaps</div>
+            {subCards.map(c => (
+              <div key={c._id} className="sub-row">
                 <span className="sub-icon">⇄</span>
                 <span className="sub-text">{c.title}</span>
                 {c.claimedBy && <span className="sub-claimed">✓ {c.claimedBy}</span>}
-              </motion.div>
-            ))
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Schedule / Calendar */}
+        <div className="sidebar-section-label" style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Schedule</span>
+          <button className="cal-add-btn" onClick={() => setShowCalForm(v => !v)}>+</button>
+        </div>
+        <AnimatePresence>
+          {showCalForm && (
+            <motion.form
+              className="cal-form"
+              onSubmit={addCalendarEvent}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <input
+                className="cal-input"
+                placeholder="Event title"
+                value={calTitle}
+                onChange={e => setCalTitle(e.target.value)}
+                required
+              />
+              <input
+                className="cal-input"
+                type="datetime-local"
+                value={calTime}
+                onChange={e => setCalTime(e.target.value)}
+              />
+              <button type="submit" className="btn btn-sm" style={{ width: "100%" }}>Add to schedule</button>
+            </motion.form>
           )}
         </AnimatePresence>
+        {state.events.length === 0 ? (
+          <div className="sub-empty">No events yet — post with #schedule or use +</div>
+        ) : (
+          <AnimatePresence initial={false}>
+            {state.events.map(ev => (
+              <motion.div key={ev._id} className="cal-event-row"
+                initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}>
+                <div className="cal-event-time">
+                  {new Date(ev.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+                <div className="cal-event-title">{ev.title}</div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
 
-        <div className="sidebar-section-label" style={{ marginTop: 16 }}>Activity</div>
+        {/* Activity feed */}
+        <div className="sidebar-section-label" style={{ marginTop: 14 }}>Activity</div>
         <AnimatePresence initial={false}>
           {state.feed.map(item => (
             <motion.div
