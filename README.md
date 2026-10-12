@@ -244,6 +244,8 @@ To improve an agent, run `npm run evolve -- Alex` and open `/evolve`.
 | **Bloomerang: AI Agent for Volunteer Coordinators** | The agents do a THON coordinator's busywork: picking who goes and their backup, swapping in a backup dancer when someone drops out, and drafting the messages to send. **The coordinator stays in charge:** agents only add cards and drafts, never edit a human's card, and a captain claims the task and sends the message. |
 
 > ✅ **Bloomerang:** our entry for this track was reviewed and verified by a c0mpiled-15 host.
+>
+> 📄 **Related work:** [RescueLens](https://arxiv.org/abs/2511.15698) (Raman et al., IAAI 2026) used an LLM to triage volunteer feedback for 412 Food Rescue, a Pittsburgh nonprofit. Organizers there said it helped them spend their time better. Huddle applies the same pattern (AI triages and suggests, the coordinator decides) to live, on-the-floor coordination at THON.
 
 ## 🧗 Challenges & what we learned
 
