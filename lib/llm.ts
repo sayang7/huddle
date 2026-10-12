@@ -18,7 +18,7 @@ async function callLlm(system: string, user: string): Promise<Response> {
       temperature: 0.7,
       // DeepSeek spends ~300-400 tokens reasoning before it answers;
       // at 400 the answer was often cut off or empty.
-      max_tokens: 1500,
+      max_tokens: 4000,
     }),
   });
 }
