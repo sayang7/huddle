@@ -8,7 +8,7 @@
 
 ### 🚀 [Try the live demo → huddle-q8ea.vercel.app](https://huddle-q8ea.vercel.app/)
 
-📈 **Evolve results:** [huddle-q8ea.vercel.app/evolve](https://huddle-q8ea.vercel.app/evolve) &nbsp;·&nbsp; 🎥 **Demo video:** _link coming_
+📈 **Evolve results:** [huddle-q8ea.vercel.app/evolve](https://huddle-q8ea.vercel.app/evolve) &nbsp;·&nbsp; 🎥 **Demo video:** [watch on Google Drive](https://drive.google.com/file/d/1Mad2aAYqdm43vQKRzelh-G-V0pNdZWo5/view?usp=sharing)
 
 ---
 
@@ -243,7 +243,7 @@ To improve an agent, run `npm run evolve -- Alex` and open `/evolve`.
 | **MongoDB: Highest-Aura Use** | Change streams *are* the agent runtime. Each trigger is a stored MongoDB filter, adding an agent is inserting a document, and an atomic `findOneAndUpdate` gives each card exactly one agent. |
 | **Bloomerang: AI Agent for Volunteer Coordinators** | The agents do a THON coordinator's busywork: picking who goes and their backup, swapping in a backup dancer when someone drops out, and drafting the messages to send. **The coordinator stays in charge:** agents only add cards and drafts, never edit a human's card, and a captain claims the task and sends the message. |
 
-> 🎙️ **Coordinator interview:** _to add: who we talked to and what part of their week they'd hand off._
+> ✅ **Bloomerang:** our entry for this track was reviewed and verified by a c0mpiled-15 host.
 
 ## 🧗 Challenges & what we learned
 
