@@ -117,26 +117,131 @@
     { "name": "Elliot Anderson", "block": "D", "section": "418", "status": "available", "phone": "+18145550408" }
   ],
   "tests": [
-    { "agent": "Alex", "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",                        "mustInclude": ["water", "supplies"],    "split": "train" },
-    { "agent": "Alex", "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",                         "mustInclude": ["medical", "critical"],  "split": "train" },
-    { "agent": "Alex", "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",                    "mustInclude": ["morale"],               "split": "train" },
-    { "agent": "Alex", "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",                  "mustInclude": ["supplies"],             "split": "train" },
-    { "agent": "Alex", "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",                    "mustInclude": ["logistics"],            "split": "train" },
-    { "agent": "Alex", "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",                    "mustInclude": ["medical"],              "split": "train" },
-    { "agent": "Alex", "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",                     "mustInclude": ["logistics"],            "split": "train" },
-    { "agent": "Alex", "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",                          "mustInclude": ["morale"],               "split": "train" },
-    { "agent": "Alex", "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",    "mustInclude": ["security"],             "split": "train" },
-    { "agent": "Alex", "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",                                       "mustInclude": ["medical"],              "split": "train" },
-    { "agent": "Alex", "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery — hazard for dancers.",                "mustInclude": ["logistics"],            "split": "train" },
-    { "agent": "Alex", "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",                     "mustInclude": ["supplies"],             "split": "train" },
-    { "agent": "Alex", "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",                    "mustInclude": ["medical", "critical"],  "split": "heldout" },
-    { "agent": "Alex", "input": "Title: Section 400 needs more energy snacks\n\nThey've been standing for 12 hours and supplies are gone.",     "mustInclude": ["supplies"],             "split": "heldout" },
-    { "agent": "Alex", "input": "Title: Lighting rig flickering above Block D\n\nOverhead lights unstable, dancers distracted.",                "mustInclude": ["logistics"],            "split": "heldout" },
-    { "agent": "Alex", "input": "Title: Two dancers arguing loudly\n\nConflict escalating near the west entrance.",                             "mustInclude": ["security"],             "split": "heldout" },
-    { "agent": "Alex", "input": "Title: Gatorade spilled on the dance floor\n\nSticky puddle near Block A, dancers are slipping.",               "mustInclude": ["logistics"],            "split": "heldout" },
-    { "agent": "Alex", "input": "Title: Dancer can't breathe after eating peanuts\n\nThroat swelling in Section 118, dancer is panicking.",     "mustInclude": ["medical", "critical"],  "split": "heldout" },
-    { "agent": "MedAlert", "input": "Title: Dancer collapsed and unresponsive\n\nParticipant down in Block D section 401.",                     "mustInclude": ["medical"],              "split": "heldout" },
-    { "agent": "SwapBot",  "input": "Title: Jordan needs to sub out — section 112\n\nAvailable backup dancers: Casey Park (section 112, +18145550102)", "mustInclude": ["Casey", "section"], "split": "heldout" },
-    { "agent": "SwapBot",  "input": "Title: Blake can't continue — section 204\n\nAvailable backup dancers: Cameron Davis (section 204, +18145550202)", "mustInclude": ["Cameron", "section"], "split": "heldout" }
+    {
+      "agent": "Alex",
+      "input": "Title: Section 112 dancer needs water\n\nDancer hasn't had water in over 30 minutes.",
+      "mustInclude": ["supplies", "urgent"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer collapsed in Block C\n\nDancer fell to the floor and is unresponsive.",
+      "mustInclude": ["medical", "critical"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Section 204 crowd getting restless\n\nParticipants losing energy, morale dropping.",
+      "mustInclude": ["morale", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Snack station in Zone 3 is empty\n\nVolunteers ran out of granola bars and crackers.",
+      "mustInclude": ["supplies", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Bathroom line too long near entrance\n\nLine is backing up and causing congestion.",
+      "mustInclude": ["logistics", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer experiencing leg cramps\n\nParticipant in Block A can't stand without pain.",
+      "mustInclude": ["medical", "urgent"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: DJ equipment making loud buzzing noise\n\nSound system interference in main hall.",
+      "mustInclude": ["logistics", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Section 301 energy very low\n\nDancers are zoning out and stopping movement.",
+      "mustInclude": ["morale", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Unauthorized person on the dance floor\n\nUnknown individual entered restricted area near Block B.",
+      "mustInclude": ["security", "urgent"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer dizzy and nauseous\n\nParticipant in Zone 5 feels faint.",
+      "mustInclude": ["medical", "urgent"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Water cooler tipped over near stage\n\nFloor is wet and slippery, hazard for dancers.",
+      "mustInclude": ["logistics", "urgent"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer requests blanket\n\nParticipant in Section 115 is cold during rest period.",
+      "mustInclude": ["supplies", "routine"],
+      "split": "train"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer having allergic reaction\n\nRash developing on arms, possible food allergy.",
+      "mustInclude": ["medical", "critical"],
+      "split": "heldout"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Section 400 needs more energy snacks\n\nThey've been standing for 12 hours and supplies are gone.",
+      "mustInclude": ["supplies", "routine"],
+      "split": "heldout"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Mic cutting out during family hour speeches\n\nSpeakers keep dropping in the main hall.",
+      "mustInclude": ["logistics", "routine"],
+      "split": "heldout"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Two dancers arguing loudly\n\nConflict escalating near the west entrance.",
+      "mustInclude": ["security", "urgent"],
+      "split": "heldout"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Gatorade spilled on the dance floor\n\nSticky puddle near Block A, dancers are slipping.",
+      "mustInclude": ["logistics", "urgent"],
+      "split": "heldout"
+    },
+    {
+      "agent": "Alex",
+      "input": "Title: Dancer can't breathe after eating peanuts\n\nThroat swelling in Section 118, dancer is panicking.",
+      "mustInclude": ["medical", "critical"],
+      "split": "heldout"
+    },
+    {
+      "agent": "MedAlert",
+      "input": "Title: Dancer collapsed and unresponsive\n\nParticipant down in Block D section 401.",
+      "mustInclude": ["medical"],
+      "split": "heldout"
+    },
+    {
+      "agent": "SwapBot",
+      "input": "Title: Jordan needs to sub out — section 112\n\nAvailable backup dancers: Casey Park (section 112, +18145550102)",
+      "mustInclude": ["Casey", "section"],
+      "split": "heldout"
+    },
+    {
+      "agent": "SwapBot",
+      "input": "Title: Blake can't continue — section 204\n\nAvailable backup dancers: Cameron Davis (section 204, +18145550202)",
+      "mustInclude": ["Cameron", "section"],
+      "split": "heldout"
+    }
   ]
 }

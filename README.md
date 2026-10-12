@@ -20,7 +20,7 @@
 - [Meet the agents](#-meet-the-agents)
 - [Try it yourself](#-try-it-yourself)
 - [Self-improving agents (evolve)](#-self-improving-agents-evolve)
-- [Judging criteria](#-judging-criteria)
+- [Judging criteria (Luminal)](#-judging-criteria-luminal-self-improving-agent-team)
 - [Architecture & tech stack](#-architecture--tech-stack)
 - [Run it locally](#-run-it-locally)
 - [Prize tracks](#-prize-tracks)
@@ -138,7 +138,7 @@ The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`e
 
 </details>
 
-## 🎯 Judging criteria
+## 🎯 Judging criteria: Luminal Self-Improving Agent Team
 
 **The problem:** turn free-text floor reports into 5 issue types × 3 severity levels, following THON's own triage policy (`critical` / `urgent` / `routine`). The original prompt never states that policy, so the agent has to infer it from 12 train examples and apply it to cases it has never seen.
 
