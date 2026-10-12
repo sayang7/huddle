@@ -6,7 +6,9 @@
 
 **"AI is single-player. Huddle is where a team and its agents work together, live."**
 
-🎥 **Demo video:** _link coming_ &nbsp;·&nbsp; 📈 **Evolve results:** run the app and open [`/evolve`](#-self-improving-agents-evolve)
+### 🚀 [Try the live demo → huddle-q8ea.vercel.app](https://huddle-q8ea.vercel.app/)
+
+📈 **Evolve results:** [huddle-q8ea.vercel.app/evolve](https://huddle-q8ea.vercel.app/evolve) &nbsp;·&nbsp; 🎥 **Demo video:** _link coming_
 
 ---
 
@@ -87,7 +89,7 @@ One agent per tag, each modeled on a THON committee. Every reply follows the sam
 
 ## 🧪 Try it yourself
 
-Open the board in **two browser windows** with two different names, then post these. Pick the tag button first.
+Open the [live board](https://huddle-q8ea.vercel.app/) in **two browser windows** with two different names, then post these. On the hosted version, agents can take up to a minute to answer. Pick the tag button first.
 
 | Tag | Post this | Who answers |
 |---|---|---|
@@ -102,7 +104,7 @@ Open the board in **two browser windows** with two different names, then post th
 Then:
 - [ ] In the **other window**, click **I'm on it** on a card and watch the name appear in both.
 - [ ] Spawn an agent: *"An agent that handles accessibility requests like wheelchair seating and ASL interpreters."* It joins the agent list instantly.
-- [ ] Open **`/evolve`** to see how Alex improved.
+- [ ] Open [**`/evolve`**](https://huddle-q8ea.vercel.app/evolve) to see how Alex improved.
 
 ## 📈 Self-improving agents (evolve)
 
@@ -145,7 +147,7 @@ The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`e
 | **Measurable improvement** | 40% | **Held-out tests (never shown to the optimizer): 1/6 → 4/6** (17% → 67%). **Fresh tests written after the run** (12 new cases × 2 runs): **2/24 → 24/24** (8% → 100%), reproducible with `npx tsx scripts/fresh-eval.ts`. Train: 0/12 → 11/12. |
 | **Improvement-loop design** | 30% | Every round feeds the optimizer the exact failing cases and the words each one needed. A rewrite replaces the current prompt **only if it scores higher** on train. Held-out and fresh tests never enter the loop. |
 | **Effective parallelism** | 20% | **4 rewrites are generated and scored in parallel** each round, throttled to stay under Luminal's rate limit. Round 1's best-of-4 took train from 0/12 to 11/12 in a single round. |
-| **Demo & clarity** | 10% | One command reproduces it (`npm run evolve -- Alex`). The `/evolve` page shows baseline, rounds and held-out results; the raw run is in [`evolve-log.txt`](evolve-log.txt). |
+| **Demo & clarity** | 10% | Live at [huddle-q8ea.vercel.app](https://huddle-q8ea.vercel.app/). One command reproduces evolve (`npm run evolve -- Alex`). The [`/evolve`](https://huddle-q8ea.vercel.app/evolve) page shows baseline, rounds and held-out results; the raw run is in [`evolve-log.txt`](evolve-log.txt). |
 
 > **Limits we know about:** the test sets are small, and the results come from one evolve run. We wrote the fresh tests after the run, labeled with the same THON policy as the train tests. The 4 parallel candidates differ by sampling, not by strategy; giving each one its own strategy is first on our [what's next](#-whats-next) list.
 
@@ -207,6 +209,8 @@ evolve-results.json         latest evolve run (read by /evolve)
 </details>
 
 ## 🚀 Run it locally
+
+No setup needed to try it: use the [live demo](https://huddle-q8ea.vercel.app/). To run your own copy:
 
 You need Node 20+, a MongoDB Atlas cluster with your IP on its access list, and a Luminal API key.
 
