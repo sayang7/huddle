@@ -20,7 +20,6 @@
 - [Meet the agents](#-meet-the-agents)
 - [Try it yourself](#-try-it-yourself)
 - [Self-improving agents (evolve)](#-self-improving-agents-evolve)
-- [Judging criteria (Luminal)](#-judging-criteria-luminal-self-improving-agent-team)
 - [Architecture & tech stack](#-architecture--tech-stack)
 - [Run it locally](#-run-it-locally)
 - [Prize tracks](#-prize-tracks)
@@ -121,6 +120,7 @@ Then:
 |---|---|---|
 | Train tests | 0 / 12 | **11 / 12** (12/12 on the round-3 recheck, so it stopped early) |
 | **Held-out tests (never seen)** | 1 / 6 | **4 / 6** |
+| **Fresh tests written after the run** (12 cases × 2 runs) | 2 / 24 | **24 / 24** |
 
 <details>
 <summary><b>Round by round</b></summary>
@@ -137,19 +137,6 @@ What it learned, in its own words: *"Every reply must clearly include the issue 
 The raw run is in [`evolve-log.txt`](evolve-log.txt), and the numbers are in [`evolve-results.json`](evolve-results.json).
 
 </details>
-
-## 🎯 Judging criteria: Luminal Self-Improving Agent Team
-
-**The problem:** turn free-text floor reports into 5 issue types × 3 severity levels, following THON's own triage policy (`critical` / `urgent` / `routine`). The original prompt never states that policy, so the agent has to infer it from 12 train examples and apply it to cases it has never seen.
-
-| Criterion | Weight | Our evidence |
-|---|---|---|
-| **Measurable improvement** | 40% | **Held-out tests (never shown to the optimizer): 1/6 → 4/6** (17% → 67%). **Fresh tests written after the run** (12 new cases × 2 runs): **2/24 → 24/24** (8% → 100%), reproducible with `npx tsx scripts/fresh-eval.ts`. Train: 0/12 → 11/12. |
-| **Improvement-loop design** | 30% | Every round feeds the optimizer the exact failing cases and the words each one needed. A rewrite replaces the current prompt **only if it scores higher** on train. Held-out and fresh tests never enter the loop. |
-| **Effective parallelism** | 20% | **4 rewrites are generated and scored in parallel** each round, throttled to stay under Luminal's rate limit. Round 1's best-of-4 took train from 0/12 to 11/12 in a single round. |
-| **Demo & clarity** | 10% | Live at [huddle-q8ea.vercel.app](https://huddle-q8ea.vercel.app/). One command reproduces evolve (`npm run evolve -- Alex`). The [`/evolve`](https://huddle-q8ea.vercel.app/evolve) page shows baseline, rounds and held-out results; the raw run is in [`evolve-log.txt`](evolve-log.txt). |
-
-> **Limits we know about:** the test sets are small, and the results come from one evolve run. We wrote the fresh tests after the run, labeled with the same THON policy as the train tests. The 4 parallel candidates differ by sampling, not by strategy; giving each one its own strategy is first on our [what's next](#-whats-next) list.
 
 ## 🧱 Architecture & tech stack
 
